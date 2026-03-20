@@ -19,6 +19,12 @@ const RANGE_LABELS: Record<Range, string> = {
 const RANGES: Range[] = ['1D', '1W', '1M', '1Y', '5Y']
 const TOOLTIP_STYLE = { fontSize: 12, borderRadius: 8 }
 
+function formatTick(value: number): string {
+  if (value >= 100) return value.toFixed(1)
+  if (value >= 10) return value.toFixed(2)
+  return value.toFixed(4)
+}
+
 interface DataPoint {
   date: string
   rate: number
@@ -119,7 +125,17 @@ export default function RateChart({ base, target }: RateChartProps) {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="date" hide />
-              <YAxis domain={['auto', 'auto']} hide />
+              <YAxis
+                domain={['auto', 'auto']}
+                orientation="left"
+                mirror
+                width={50}
+                tickCount={4}
+                tickFormatter={formatTick}
+                tick={{ fontSize: 10, fill: '#94a3b8' }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip
                 contentStyle={TOOLTIP_STYLE}
                 formatter={(v) => [typeof v === 'number' ? v.toFixed(4) : String(v), `${base}/${target}`]}
