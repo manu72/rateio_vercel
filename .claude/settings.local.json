@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/Users/manuhume/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh --project-dir /Users/manuhume/GIT/rateio)",
+      "Bash(node -e \"const jest = require\\(''''jest''''\\); console.log\\(Object.keys\\(jest\\)\\)\")",
+      "Bash(npx --yes jest --showConfig)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); keys=[k for k in d.get\\(''''configs'''',[{}]\\)[0] if ''''setup'''' in k.lower\\(\\)]; print\\(keys\\)\")",
+      "Bash(npx:*)",
+      "Bash(mkdir -p /tmp/next-scaffold)",
+      "Read(//tmp/**)",
+      "Bash(rsync:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
