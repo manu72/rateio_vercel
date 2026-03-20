@@ -74,7 +74,7 @@ export default function CurrencyRow({
       >
         {/* Drag handle */}
         <span
-          className="cursor-grab text-slate-300 dark:text-slate-600 select-none"
+          className="cursor-grab text-slate-300 dark:text-slate-600 select-none touch-none"
           aria-label="drag to reorder"
           {...dragHandleProps}
         >
