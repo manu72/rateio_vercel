@@ -1,0 +1,136 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
+  CartesianGrid, Tooltip,
+} from 'recharts'
+
+interface RateChartProps {
+  base: string
+  target: string
+}
+
+type Range = '1D' | '1W' | '1M' | '1Y' | '5Y'
+const RANGE_DAYS: Record<Range, number> = { '1D': 1, '1W': 7, '1M': 30, '1Y': 365, '5Y': 1825 }
+const RANGE_LABELS: Record<Range, string> = {
+  '1D': '1 day', '1W': '1 week', '1M': '1 month', '1Y': '1 year', '5Y': '5 years',
+}
+const RANGES: Range[] = ['1D', '1W', '1M', '1Y', '5Y']
+const TOOLTIP_STYLE = { fontSize: 12, borderRadius: 8 }
+
+interface DataPoint {
+  date: string
+  rate: number
+}
+
+export default function RateChart({ base, target }: RateChartProps) {
+  const [range, setRange] = useState<Range>('1M')
+  const [data, setData] = useState<DataPoint[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const gradientId = `rateGradient-${base}-${target}`
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setLoading(true)
+    setError(null)
+    const days = RANGE_DAYS[range]
+    fetch(`/api/history?base=${base}&target=${target}&days=${days}`, { signal: controller.signal })
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to load history')
+        return r.json()
+      })
+      .then(({ dates, rates }: { dates: string[]; rates: number[] }) => {
+        setData(dates.map((date, i) => ({ date, rate: rates[i] })))
+      })
+      .catch(e => { if (e.name !== 'AbortError') setError(e.message) })
+      .finally(() => setLoading(false))
+    return () => controller.abort()
+  }, [base, target, range])
+
+  const high = data.length ? data.reduce((m, d) => Math.max(m, d.rate), -Infinity) : null
+  const low = data.length ? data.reduce((m, d) => Math.min(m, d.rate), Infinity) : null
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Range selector */}
+      <div className="flex gap-2">
+        {RANGES.map(r => (
+          <button
+            key={r}
+            type="button"
+            aria-label={RANGE_LABELS[r]}
+            onClick={() => setRange(r)}
+            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+              range === r
+                ? 'bg-blue-500 text-white'
+                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm'
+            }`}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+
+      {/* Chart */}
+      {loading && (
+        <div className="h-40 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+      )}
+      {error && (
+        <p className="text-sm text-red-500 text-center py-8">{error}</p>
+      )}
+      {!loading && !error && data.length === 0 && (
+        <p className="text-sm text-slate-400 text-center py-8">No data available for this range.</p>
+      )}
+      {!loading && !error && data.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
+          <ResponsiveContainer width="100%" height={120}>
+            <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="date" hide />
+              <YAxis domain={['auto', 'auto']} hide />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                formatter={(v) => [typeof v === 'number' ? v.toFixed(4) : String(v), `${base}/${target}`]}
+              />
+              <Area
+                type="monotone"
+                dataKey="rate"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                fill={`url(#${gradientId})`}
+                dot={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+          <div className="flex justify-between text-xs text-slate-400 mt-1">
+            <span>{data[0]?.date}</span>
+            <span>{data[data.length - 1]?.date}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Stats */}
+      {!loading && !error && high !== null && low !== null && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
+            <p className="text-xs text-slate-400 mb-1">Period high</p>
+            <p className="text-base font-bold text-green-500">{high.toFixed(4)}</p>
+          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
+            <p className="text-xs text-slate-400 mb-1">Period low</p>
+            <p className="text-base font-bold text-red-500">{low.toFixed(4)}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
