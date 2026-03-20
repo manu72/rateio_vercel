@@ -2,4 +2,4 @@
 
 ## Lessons Learned
 
-- **Wrap ALL fetch calls in try-catch (not just fallback-eligible ones)**: `fetch()` can throw on network-level failures (DNS, timeout). An `if (res.ok)` guard only handles HTTP error responses. This applies to every fetch in an API route — both primary and last-resort calls — so the client always receives a structured JSON error instead of an unhandled crash. See `app/api/rates/route.ts` (`Promise.allSettled`) as the reference pattern.
+- **Guard fetch AND .json() with try-catch in API routes**: Both `fetch()` (DNS, timeout) and `.json()` (malformed/truncated body) can throw. An `if (res.ok)` guard only handles HTTP status codes. In dual-source routes, an unguarded `.json()` on source A can crash the handler before source B is processed — defeating the entire fallback strategy. Wrap the full fetch-parse-transform chain in try-catch for each source independently.
