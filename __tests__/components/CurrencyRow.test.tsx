@@ -17,6 +17,8 @@ const defaultProps = {
 }
 
 describe('CurrencyRow', () => {
+  beforeEach(() => jest.clearAllMocks())
+
   it('renders currency code, name and flag', () => {
     render(<CurrencyRow {...defaultProps} />)
     expect(screen.getByText('USD')).toBeInTheDocument()
@@ -35,14 +37,21 @@ describe('CurrencyRow', () => {
     expect(row).toHaveClass('ring-2')
   })
 
-  it('calls onChange with sanitised input (digits + decimal only)', async () => {
+  it('strips non-numeric characters and collapses multiple decimals', () => {
     render(<CurrencyRow {...defaultProps} />)
     const input = screen.getByRole('textbox')
-    await userEvent.clear(input)
-    await userEvent.type(input, '12.34abc')
-    // onChange should have been called with sanitised values only
-    const calls = (defaultProps.onChange as jest.Mock).mock.calls.map(c => c[0])
-    expect(calls.every((v: string) => /^[\d.]*$/.test(v))).toBe(true)
+    fireEvent.change(input, { target: { value: '12.34abc' } })
+    expect(defaultProps.onChange).toHaveBeenCalledWith('12.34')
+    fireEvent.change(input, { target: { value: '1.2.3' } })
+    expect(defaultProps.onChange).toHaveBeenCalledWith('1.23')
+    fireEvent.change(input, { target: { value: '.5' } })
+    expect(defaultProps.onChange).toHaveBeenCalledWith('0.5')
+  })
+
+  it('calls onRemove when the remove button is clicked', () => {
+    render(<CurrencyRow {...defaultProps} />)
+    fireEvent.click(screen.getByRole('button', { name: /remove currency/i }))
+    expect(defaultProps.onRemove).toHaveBeenCalled()
   })
 
   it('calls onFocus when input is focused', () => {

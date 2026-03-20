@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CURRENCIES } from '@/lib/currencies'
 
 interface CurrencyPickerProps {
@@ -12,17 +12,22 @@ interface CurrencyPickerProps {
 export default function CurrencyPicker({ selected, onAdd, onClose }: CurrencyPickerProps) {
   const [query, setQuery] = useState('')
   const atMax = selected.length >= 10
+  const selectedSet = useMemo(() => new Set(selected), [selected])
 
-  const filtered = query.trim()
-    ? CURRENCIES.filter(c =>
-        c.code.toLowerCase().includes(query.toLowerCase()) ||
-        c.name.toLowerCase().includes(query.toLowerCase())
-      )
-    : CURRENCIES
+  const q = query.trim().toLowerCase()
+  const filtered = useMemo(
+    () =>
+      q
+        ? CURRENCIES.filter(
+            c => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
+          )
+        : CURRENCIES,
+    [q]
+  )
 
   function handleSelect(code: string) {
-    if (selected.includes(code)) return  // already added
-    if (atMax) return                    // at limit
+    if (selectedSet.has(code)) return  // already added
+    if (atMax) return                  // at limit
     onAdd(code)
   }
 
@@ -55,14 +60,17 @@ export default function CurrencyPicker({ selected, onAdd, onClose }: CurrencyPic
       </div>
 
       {/* List */}
-      <ul className="flex-1 overflow-y-auto">
+      <ul role="listbox" className="flex-1 overflow-y-auto">
         {filtered.map(currency => {
-          const isSelected = selected.includes(currency.code)
+          const isSelected = selectedSet.has(currency.code)
           return (
             <li
               key={currency.code}
+              role="option"
               aria-selected={isSelected}
+              tabIndex={0}
               onClick={() => handleSelect(currency.code)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSelect(currency.code) }}
               className={`flex items-center gap-3 px-4 py-3 border-b border-slate-50 dark:border-slate-800 cursor-pointer ${
                 isSelected
                   ? 'opacity-50 cursor-default'

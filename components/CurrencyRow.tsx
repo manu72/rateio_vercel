@@ -13,7 +13,7 @@ interface CurrencyRowProps {
   onChange: (value: string) => void
   onChartClick: () => void
   onRemove: () => void
-  dragHandleProps: Record<string, unknown>
+  dragHandleProps: React.HTMLAttributes<HTMLElement>
 }
 
 export default function CurrencyRow({
@@ -24,9 +24,10 @@ export default function CurrencyRow({
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // Sanitise: digits and at most one decimal point
-    const raw = e.target.value
-    const sanitised = raw.replace(/[^\d.]/g, '').replace(/^(\d*\.?\d*).*/, '$1')
+    const stripped = e.target.value.replace(/[^\d.]/g, '')
+    const parts = stripped.split('.')
+    const integer = parts[0] === '' && parts.length > 1 ? '0' : parts[0]
+    const sanitised = parts.length > 1 ? integer + '.' + parts.slice(1).join('') : integer
     onChange(sanitised)
   }
 
@@ -56,7 +57,7 @@ export default function CurrencyRow({
       >
         <button
           onClick={onRemove}
-          aria-label="remove currency"
+          aria-label="delete"
           className="h-full w-20 bg-red-500 text-white text-sm font-semibold"
         >
           Remove
@@ -96,8 +97,8 @@ export default function CurrencyRow({
           value={value}
           onFocus={onFocus}
           onChange={handleChange}
-          className={`ml-auto text-xl font-semibold text-right w-28 bg-transparent border-none outline-none text-slate-900 dark:text-slate-100 ${
-            isActive ? 'border-b border-blue-500' : ''
+          className={`ml-auto text-xl font-semibold text-right w-28 bg-transparent outline-none text-slate-900 dark:text-slate-100 border-b ${
+            isActive ? 'border-blue-500' : 'border-transparent'
           }`}
           aria-label={`${code} amount`}
         />
@@ -117,7 +118,7 @@ export default function CurrencyRow({
         <button
           onClick={onRemove}
           aria-label="remove currency"
-          className="hidden group-hover:flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors text-base leading-none"
+          className="hidden md:flex opacity-0 group-hover:opacity-100 items-center justify-center text-slate-300 hover:text-red-500 transition-opacity text-base leading-none"
         >
           ✕
         </button>
