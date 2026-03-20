@@ -60,24 +60,28 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'No historical data available for this currency pair' }, { status: 500 })
   }
 
-  const res = await fetch(
-    `https://v6.exchangerate-api.com/v6/${apiKey}/timeseries/${base}/${start}/${end}`,
-    { next: { revalidate: 86400 } }
-  )
+  try {
+    const res = await fetch(
+      `https://v6.exchangerate-api.com/v6/${apiKey}/timeseries/${base}/${start}/${end}`,
+      { next: { revalidate: 86400 } }
+    )
 
-  if (!res.ok) {
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 })
+    }
+
+    const data = await res.json()
+    const ratesMap: Record<string, Record<string, number>> = data.rates
+    const pairs = Object.keys(ratesMap)
+      .sort()
+      .map(date => ({ date, rate: ratesMap[date][target] }))
+      .filter(p => p.rate != null)
+
+    return NextResponse.json({
+      dates: pairs.map(p => p.date),
+      rates: pairs.map(p => p.rate),
+    })
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 })
   }
-
-  const data = await res.json()
-  const ratesMap: Record<string, Record<string, number>> = data.rates
-  const pairs = Object.keys(ratesMap)
-    .sort()
-    .map(date => ({ date, rate: ratesMap[date][target] }))
-    .filter(p => p.rate != null)
-
-  return NextResponse.json({
-    dates: pairs.map(p => p.date),
-    rates: pairs.map(p => p.rate),
-  })
 }
