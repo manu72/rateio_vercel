@@ -8,6 +8,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Intended to replace the "Currency Converter Plus" Android app — optimised for mobile (max-width 430px).
 
+## DEVOPS RULES [CRITICAL]
+
+- ALWAYS use sub-agents for codebase searches, documentation reviews and web search tasks, or for clear, specific independent sub-tasks
+- Sub-agents should report their findings back to you the controller
+- Always use superpowers when appropriate
+- Always use sequential-thinking
+- ALWAYS ASK before using git commands
+- ALWAYS ASK before staging or committing changes
+- keep commit messages concise
+- NEVER use git push
+
 ## Development Commands
 
 ```bash
@@ -20,6 +31,7 @@ npm run lint         # ESLint
 ```
 
 For E2E tests, first install the browser (one-time):
+
 ```bash
 npx playwright install chromium
 ```
@@ -35,6 +47,7 @@ Put this in `.env.local` for local development (already gitignored).
 ## Architecture
 
 ### Stack
+
 - **Next.js 16** (App Router, `'use client'` components)
 - **TypeScript** with strict mode
 - **Tailwind CSS v4** — configured via `@import "tailwindcss"` in `globals.css`, no `tailwind.config.ts` needed
@@ -72,12 +85,14 @@ e2e/                   # Playwright E2E tests
 ```
 
 ### Data Flow
+
 1. `app/page.tsx` fetches `/api/rates` on mount → live rates cached hourly server-side
 2. Each currency row converts amounts using `lib/converter.ts` (pure math, no API calls)
 3. Chart page fetches `/api/history?base=X&target=Y&days=N` → daily rates from ExchangeRate API
 4. Selected currencies persisted to `localStorage` via `lib/storage.ts`
 
 ### Conventions
+
 - All currency codes are uppercased at the URL param boundary (`params.base.toUpperCase()`)
 - Input sanitisation uses split-on-decimal approach (not regex replace) to avoid dropping digits
 - `storageLoaded` boolean flag used (not `currencies.length === 0`) to distinguish loading state from empty
