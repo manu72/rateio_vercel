@@ -16,17 +16,25 @@ export async function GET() {
   let updatedAt: string | null = null
 
   if (frankfurterResult.status === 'fulfilled' && frankfurterResult.value.ok) {
-    const data = await frankfurterResult.value.json()
-    frankfurterRates = { ...data.rates, USD: 1 }
-    updatedAt = data.date ?? null // "YYYY-MM-DD" — parseable by new Date()
+    try {
+      const data = await frankfurterResult.value.json()
+      frankfurterRates = { ...data.rates, USD: 1 }
+      updatedAt = data.date ?? null // "YYYY-MM-DD" — parseable by new Date()
+    } catch {
+      // Malformed body — skip this source, fall through to fallback
+    }
   }
 
   let fallbackRates: Record<string, number> = {}
 
   if (fallbackResult.status === 'fulfilled' && fallbackResult.value.ok) {
-    const data = await fallbackResult.value.json()
-    fallbackRates = data.conversion_rates ?? {}
-    if (!updatedAt) updatedAt = data.time_last_update_utc ?? null
+    try {
+      const data = await fallbackResult.value.json()
+      fallbackRates = data.conversion_rates ?? {}
+      if (!updatedAt) updatedAt = data.time_last_update_utc ?? null
+    } catch {
+      // Malformed body — skip this source
+    }
   }
 
   // Frankfurter takes precedence for its currencies; fallback fills the rest
