@@ -32,23 +32,26 @@ export async function GET(request: Request) {
 
   // Use Frankfurter if both currencies are supported (free, no key, no limits)
   if (FRANKFURTER_CURRENCIES.has(base) && FRANKFURTER_CURRENCIES.has(target)) {
-    const res = await fetch(
-      `https://api.frankfurter.dev/v1/${start}..${end}?base=${base}&symbols=${target}`,
-      { next: { revalidate: 86400 } }
-    )
-    if (res.ok) {
-      const data = await res.json()
-      const ratesMap: Record<string, Record<string, number>> = data.rates
-      const pairs = Object.keys(ratesMap)
-        .sort()
-        .map(date => ({ date, rate: ratesMap[date][target] }))
-        .filter(p => p.rate != null)
-      return NextResponse.json({
-        dates: pairs.map(p => p.date),
-        rates: pairs.map(p => p.rate),
-      })
+    try {
+      const res = await fetch(
+        `https://api.frankfurter.dev/v1/${start}..${end}?base=${base}&symbols=${target}`,
+        { next: { revalidate: 86400 } }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        const ratesMap: Record<string, Record<string, number>> = data.rates
+        const pairs = Object.keys(ratesMap)
+          .sort()
+          .map(date => ({ date, rate: ratesMap[date][target] }))
+          .filter(p => p.rate != null)
+        return NextResponse.json({
+          dates: pairs.map(p => p.date),
+          rates: pairs.map(p => p.rate),
+        })
+      }
+    } catch {
+      // Network-level failure (DNS, timeout, etc.) — fall through to fallback
     }
-    // Fall through to ExchangeRate-API if Frankfurter fails
   }
 
   // Fallback: ExchangeRate-API (handles exotic currencies and Frankfurter outages)
