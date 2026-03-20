@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip,
@@ -24,11 +24,34 @@ interface DataPoint {
   rate: number
 }
 
+const MIN_HEIGHT = 120
+const MAX_HEIGHT = 500
+const DEFAULT_HEIGHT = 220
+
 export default function RateChart({ base, target }: RateChartProps) {
   const [range, setRange] = useState<Range>('1M')
   const [data, setData] = useState<DataPoint[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
+  const dragStartY = useRef<number | null>(null)
+  const dragStartHeight = useRef(DEFAULT_HEIGHT)
+
+  const onDragStart = useCallback((e: React.PointerEvent) => {
+    dragStartY.current = e.clientY
+    dragStartHeight.current = chartHeight
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }, [chartHeight])
+
+  const onDragMove = useCallback((e: React.PointerEvent) => {
+    if (dragStartY.current === null) return
+    const delta = e.clientY - dragStartY.current
+    setChartHeight(Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, dragStartHeight.current + delta)))
+  }, [])
+
+  const onDragEnd = useCallback(() => {
+    dragStartY.current = null
+  }, [])
 
   const gradientId = `rateGradient-${base}-${target}`
 
@@ -76,7 +99,7 @@ export default function RateChart({ base, target }: RateChartProps) {
 
       {/* Chart */}
       {loading && (
-        <div className="h-40 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+        <div className="rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" style={{ height: chartHeight }} />
       )}
       {error && (
         <p className="text-sm text-red-500 text-center py-8">{error}</p>
@@ -85,8 +108,8 @@ export default function RateChart({ base, target }: RateChartProps) {
         <p className="text-sm text-slate-400 text-center py-8">No data available for this range.</p>
       )}
       {!loading && !error && data.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
-          <ResponsiveContainer width="100%" height={120}>
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm select-none">
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -114,6 +137,18 @@ export default function RateChart({ base, target }: RateChartProps) {
           <div className="flex justify-between text-xs text-slate-400 mt-1">
             <span>{data[0]?.date}</span>
             <span>{data[data.length - 1]?.date}</span>
+          </div>
+
+          {/* Drag handle */}
+          <div
+            className="flex justify-center pt-2 pb-0.5 cursor-ns-resize touch-none"
+            aria-label="Drag to resize chart"
+            onPointerDown={onDragStart}
+            onPointerMove={onDragMove}
+            onPointerUp={onDragEnd}
+            onPointerCancel={onDragEnd}
+          >
+            <div className="w-8 h-1 rounded-full bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors" />
           </div>
         </div>
       )}
