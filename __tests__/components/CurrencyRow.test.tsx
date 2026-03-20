@@ -70,4 +70,10 @@ describe('CurrencyRow', () => {
     render(<CurrencyRow {...defaultProps} showChartIcon={false} />)
     expect(screen.queryByRole('button', { name: /chart/i })).not.toBeInTheDocument()
   })
+
+  it('drag handle has touch-action:none so mobile touch events reach dnd-kit', () => {
+    render(<CurrencyRow {...defaultProps} />)
+    const handle = screen.getByLabelText('drag to reorder')
+    expect(handle).toHaveClass('touch-none')
+  })
 })
