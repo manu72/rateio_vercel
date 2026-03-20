@@ -4,9 +4,9 @@
 
 **Goal:** Build a mobile-first Next.js currency converter web app with live rates, localStorage persistence, and historical rate charts, deployed to Vercel.
 
-**Architecture:** Next.js 14 App Router with two pages (`/` converter, `/chart/[base]/[target]`), two API route proxies for ExchangeRate-API (live rates cached 1h, historical cached 24h), and pure client-side conversion math derived from a single active value + rates object.
+**Architecture:** Next.js 16 App Router with two pages (`/` converter, `/chart/[base]/[target]`), two API route proxies for ExchangeRate-API (live rates cached 1h, historical cached 24h), and pure client-side conversion math derived from a single active value + rates object.
 
-**Tech Stack:** Next.js 14, TypeScript, Tailwind CSS (dark mode: media), Recharts, dnd-kit, Jest + React Testing Library, Playwright, Vercel.
+**Tech Stack:** Next.js 16, TypeScript, Tailwind CSS v4 (dark mode via `prefers-color-scheme` media query, CSS-based config), Recharts, dnd-kit, Jest + React Testing Library, Playwright, Vercel.
 
 ---
 
