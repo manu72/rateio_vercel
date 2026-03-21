@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTheme } from '@/components/ThemeProvider'
 import RateChart from '@/components/RateChart'
@@ -13,6 +13,8 @@ export default function ChartPage() {
   const base = params.base.toUpperCase()
   const target = params.target.toUpperCase()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialAmount = parseFloat(searchParams.get('amount') ?? '') || 1
   const { theme, toggleTheme } = useTheme()
   const [currentRate, setCurrentRate] = useState<number | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -88,7 +90,7 @@ export default function ChartPage() {
 
       {/* Chart */}
       <div className="flex-1 px-4 py-4">
-        <RateChart base={base} target={target} currentRate={currentRate} />
+        <RateChart base={base} target={target} currentRate={currentRate} initialAmount={initialAmount} />
       </div>
 
       {pickerOpen && (

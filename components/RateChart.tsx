@@ -10,6 +10,7 @@ interface RateChartProps {
   base: string
   target: string
   currentRate?: number | null
+  initialAmount?: number
 }
 
 type Range = '1D' | '1W' | '1M' | '1Y' | '5Y'
@@ -35,13 +36,13 @@ const MIN_HEIGHT = 120
 const MAX_HEIGHT = 500
 const DEFAULT_HEIGHT = 220
 
-export default function RateChart({ base, target, currentRate }: RateChartProps) {
+export default function RateChart({ base, target, currentRate, initialAmount = 1 }: RateChartProps) {
   const [range, setRange] = useState<Range>('1M')
   const [data, setData] = useState<DataPoint[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
-  const [baseAmount, setBaseAmount] = useState('1')
+  const [baseAmount, setBaseAmount] = useState(String(initialAmount))
   const dragStartY = useRef<number | null>(null)
   const dragStartHeight = useRef(DEFAULT_HEIGHT)
 

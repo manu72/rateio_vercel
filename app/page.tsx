@@ -123,8 +123,9 @@ export default function Home() {
   }, [])
 
   const handleChartClick = useCallback((code: string) => {
-    router.push(`/chart/${activeCurrency}/${code}`)
-  }, [activeCurrency, router])
+    const amount = parseFloat(activeValue) || 1
+    router.push(`/chart/${activeCurrency}/${code}?amount=${amount}`)
+  }, [activeCurrency, activeValue, router])
 
   const handleAdd = useCallback((code: string) => {
     setCurrencies(prev => {
