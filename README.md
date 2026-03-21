@@ -2,7 +2,7 @@
 
 A mobile-first currency converter web app built with Next.js. Fetches live exchange rates from the [Frankfurter API](https://frankfurter.dev/) (ECB data, free) with [ExchangeRate-API](https://www.exchangerate-api.com/) as a fallback, and displays them in a clean, sortable UI with historical charts.
 
-Built to replace the Android app *Currency Converter Plus* — optimised for a 430px mobile viewport but fully responsive.
+Built to replace the Android app _Currency Converter Plus_ — optimised for a 430px mobile viewport but fully responsive.
 
 ## Features
 
@@ -17,19 +17,19 @@ Built to replace the Android app *Currency Converter Plus* — optimised for a 4
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router, React 19) |
-| Language | TypeScript (strict mode) |
-| Styling | Tailwind CSS v4 |
-| Charts | Recharts (AreaChart) |
-| Icons | Lucide React |
-| Drag & drop | dnd-kit |
-| Analytics | Vercel Analytics |
-| Unit tests | Jest + React Testing Library |
-| E2E tests | Playwright (Mobile Chrome / Pixel 5 viewport) |
-| CI | GitHub Actions (lint → Jest → Playwright) |
-| Rate data | Frankfurter API (primary) + ExchangeRate-API (fallback) |
+| Layer       | Technology                                              |
+| ----------- | ------------------------------------------------------- |
+| Framework   | Next.js 16 (App Router, React 19)                       |
+| Language    | TypeScript (strict mode)                                |
+| Styling     | Tailwind CSS v4                                         |
+| Charts      | Recharts (AreaChart)                                    |
+| Icons       | Lucide React                                            |
+| Drag & drop | dnd-kit                                                 |
+| Analytics   | Vercel Analytics                                        |
+| Unit tests  | Jest + React Testing Library                            |
+| E2E tests   | Playwright (Mobile Chrome / Pixel 5 viewport)           |
+| CI          | GitHub Actions (lint → Jest → Playwright)               |
+| Rate data   | Frankfurter API (primary) + ExchangeRate-API (fallback) |
 
 ## Project Structure
 
@@ -88,7 +88,7 @@ rateio/
 ### Prerequisites
 
 - Node.js 20+
-- An [ExchangeRate-API](https://www.exchangerate-api.com/) key (free tier available) — required for exotic currencies and as a fallback
+- An [ExchangeRate-API](https://www.exchangerate-api.com/) key (free tier available) — required for exotic currencies and as a fallback. Note the fallback API does not have historical data on the free tier so cannot generate charts.
 
 ### Installation
 
@@ -147,15 +147,15 @@ npm run lint         # ESLint
 1. `app/page.tsx` fetches `/api/rates` on mount — live rates cached hourly via server-side revalidation
 2. `/api/rates` queries the Frankfurter API first (free ECB data for ~30 currencies), then merges with ExchangeRate-API for full coverage
 3. Each currency row converts amounts using `lib/converter.ts` — pure math, no additional API calls
-4. Chart page fetches `/api/history?base=X&target=Y&days=N` — Frankfurter for supported pairs, ExchangeRate-API fallback for exotic ones
+4. Chart page fetches `/api/history?base=X&target=Y&days=N` — Frankfurter for supported pairs, ExchangeRate-API fallback for exotic ones (free tier does not support historical data/charts)
 5. Selected currencies are persisted to `localStorage` via `lib/storage.ts`
 
 ### API Routes
 
-| Route | Purpose | Cache |
-|---|---|---|
-| `GET /api/rates` | Live exchange rates (USD base) | 1 hour |
-| `GET /api/history?base=X&target=Y&days=N` | Historical rates for a pair | 24 hours |
+| Route                                     | Purpose                        | Cache    |
+| ----------------------------------------- | ------------------------------ | -------- |
+| `GET /api/rates`                          | Live exchange rates (USD base) | 1 hour   |
+| `GET /api/history?base=X&target=Y&days=N` | Historical rates for a pair    | 24 hours |
 
 ### Conventions
 

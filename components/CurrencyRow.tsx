@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { GripVertical, TrendingUp, X } from 'lucide-react'
 
 interface CurrencyRowProps {
@@ -9,6 +9,7 @@ interface CurrencyRowProps {
   value: string
   isActive: boolean
   showChartIcon: boolean
+  chartDisabled: boolean
   onFocus: () => void
   onChange: (value: string) => void
   onChartClick: () => void
@@ -17,11 +18,13 @@ interface CurrencyRowProps {
 }
 
 export default function CurrencyRow({
-  code, flag, value, isActive, showChartIcon,
+  code, flag, value, isActive, showChartIcon, chartDisabled,
   onFocus, onChange, onChartClick, onRemove, dragHandleProps,
 }: CurrencyRowProps) {
   const [swiped, setSwiped] = useState(false)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [tooltipVisible, setTooltipVisible] = useState(false)
+  const tooltipTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const stripped = e.target.value.replace(/[^\d.]/g, '')
@@ -30,6 +33,10 @@ export default function CurrencyRow({
     const sanitised = parts.length > 1 ? integer + '.' + parts.slice(1).join('') : integer
     onChange(sanitised)
   }
+
+  useEffect(() => {
+    return () => { if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current) }
+  }, [])
 
   function handleTouchStart(e: React.TouchEvent) {
     setTouchStartX(e.touches[0].clientX)
@@ -45,7 +52,7 @@ export default function CurrencyRow({
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl"
+      className="relative overflow-x-clip overflow-y-visible rounded-xl"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -101,7 +108,7 @@ export default function CurrencyRow({
         />
 
         {/* Chart icon — hidden for active currency since base-to-same chart is meaningless */}
-        {showChartIcon && !isActive && (
+        {showChartIcon && !isActive && !chartDisabled && (
           <button
             onClick={onChartClick}
             aria-label="chart"
@@ -109,6 +116,21 @@ export default function CurrencyRow({
           >
             <TrendingUp size={20} />
           </button>
+        )}
+
+        {showChartIcon && !isActive && chartDisabled && (
+          <ChartDisabledIcon
+            tooltipVisible={tooltipVisible}
+            onShow={() => {
+              setTooltipVisible(true)
+              if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current)
+              tooltipTimeout.current = setTimeout(() => setTooltipVisible(false), 2500)
+            }}
+            onHide={() => {
+              if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current)
+              setTooltipVisible(false)
+            }}
+          />
         )}
 
         {/* Remove button — hover-reveal on desktop */}
@@ -120,6 +142,39 @@ export default function CurrencyRow({
           <X size={14} />
         </button>
       </div>
+    </div>
+  )
+}
+
+function ChartDisabledIcon({
+  tooltipVisible,
+  onShow,
+  onHide,
+}: {
+  tooltipVisible: boolean
+  onShow: () => void
+  onHide: () => void
+}) {
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onShow}
+        onMouseEnter={onShow}
+        onMouseLeave={onHide}
+        aria-label="Historical data unavailable"
+        className="flex items-center justify-center w-[34px] h-[34px] rounded-[9px] bg-slate-100 text-slate-300 dark:bg-slate-700 dark:text-slate-500 cursor-default"
+      >
+        <TrendingUp size={20} />
+      </button>
+      {tooltipVisible && (
+        <div
+          role="tooltip"
+          className="absolute right-0 bottom-full mb-2 z-10 w-48 rounded-lg bg-slate-800 dark:bg-slate-700 px-3 py-2 text-xs text-white shadow-lg"
+        >
+          Historical data is unavailable for this currency
+        </div>
+      )}
     </div>
   )
 }

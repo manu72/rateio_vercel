@@ -16,7 +16,7 @@ import SkeletonRow from '@/components/SkeletonRow'
 import CurrencyPicker from '@/components/CurrencyPicker'
 import { convert, formatAmount } from '@/lib/converter'
 import { loadCurrencies, saveCurrencies, loadActiveValue, saveActiveValue, loadActiveCurrency, saveActiveCurrency } from '@/lib/storage'
-import { getCurrency } from '@/lib/currencies'
+import { getCurrency, hasHistoricalData } from '@/lib/currencies'
 
 interface RatesData {
   rates: Record<string, number>
@@ -30,6 +30,7 @@ interface SortableCurrencyRowProps {
   activeCurrency: string
   activeValue: string
   showChartIcon: boolean
+  chartDisabled: boolean
   onFocus: (code: string) => void
   onChange: (code: string, value: string) => void
   onChartClick: (code: string) => void
@@ -60,6 +61,7 @@ function SortableCurrencyRow(props: SortableCurrencyRowProps) {
         value={displayValue}
         isActive={props.code === props.activeCurrency}
         showChartIcon={props.showChartIcon}
+        chartDisabled={props.chartDisabled}
         onFocus={() => props.onFocus(props.code)}
         onChange={v => props.onChange(props.code, v)}
         onChartClick={() => props.onChartClick(props.code)}
@@ -194,6 +196,7 @@ export default function Home() {
                   activeCurrency={activeCurrency}
                   activeValue={activeValue}
                   showChartIcon={currencies.length >= 2}
+                  chartDisabled={!hasHistoricalData(activeCurrency) || !hasHistoricalData(code)}
                   onFocus={handleFocus}
                   onChange={handleChange}
                   onChartClick={handleChartClick}
