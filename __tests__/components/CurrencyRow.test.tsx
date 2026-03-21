@@ -68,6 +68,11 @@ describe('CurrencyRow', () => {
     expect(screen.queryByRole('button', { name: /chart/i })).not.toBeInTheDocument()
   })
 
+  it('hides chart icon for the active currency (same-to-same chart is meaningless)', () => {
+    render(<CurrencyRow {...defaultProps} isActive={true} showChartIcon={true} />)
+    expect(screen.queryByRole('button', { name: /chart/i })).not.toBeInTheDocument()
+  })
+
   it('drag handle has touch-action:none so mobile touch events reach dnd-kit', () => {
     render(<CurrencyRow {...defaultProps} />)
     const handle = screen.getByLabelText('drag to reorder')

@@ -82,7 +82,7 @@ export default function CurrencyRow({
         >
           <GripVertical size={16} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
           <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{flag}</span>
-          <span className="text-base font-bold text-slate-900 dark:text-slate-100">{code}</span>
+          <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{code}</span>
         </div>
 
         {/* Amount input */}
@@ -100,8 +100,8 @@ export default function CurrencyRow({
           aria-label={`${code} amount`}
         />
 
-        {/* Chart icon */}
-        {showChartIcon && (
+        {/* Chart icon — hidden for active currency since base-to-same chart is meaningless */}
+        {showChartIcon && !isActive && (
           <button
             onClick={onChartClick}
             aria-label="chart"

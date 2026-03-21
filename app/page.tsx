@@ -104,8 +104,18 @@ export default function Home() {
   }, [])
 
   const handleFocus = useCallback((code: string) => {
+    if (code !== activeCurrency && ratesData) {
+      const converted = formatAmount(
+        convert(
+          parseFloat(activeValue) || 0,
+          ratesData.rates[activeCurrency] ?? 1,
+          ratesData.rates[code] ?? 1,
+        )
+      )
+      setActiveValue(converted)
+    }
     setActiveCurrency(code)
-  }, [])
+  }, [activeCurrency, activeValue, ratesData])
 
   const handleChange = useCallback((code: string, value: string) => {
     setActiveCurrency(code)
