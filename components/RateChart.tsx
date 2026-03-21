@@ -92,10 +92,10 @@ export default function RateChart({ base, target }: RateChartProps) {
             type="button"
             aria-label={RANGE_LABELS[r]}
             onClick={() => setRange(r)}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+            className={`flex-1 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-all duration-150 active:scale-95 ${
               range === r
                 ? 'bg-blue-500 text-white'
-                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:bg-blue-500 hover:text-white'
             }`}
           >
             {r}
