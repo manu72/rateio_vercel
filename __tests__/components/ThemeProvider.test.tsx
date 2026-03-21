@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider, useTheme } from '@/components/ThemeProvider'
 
@@ -78,24 +78,12 @@ describe('ThemeProvider', () => {
     // We verify the toggle still completes by asserting the DOM class changed —
     // the DOM manipulation happens before the localStorage call, so if the try/catch
     // is missing, the error would escape into React's event system and fail the test.
-    // jsdom's localStorage is exposed via a window getter, so we replace it entirely
-    // (the same pattern used elsewhere in this test suite).
-    const original = global.localStorage
-    Object.defineProperty(global, 'localStorage', {
-      value: {
-        setItem: () => { throw new Error('unavailable') },
-        removeItem: () => { throw new Error('unavailable') },
-        getItem: () => null,
-        clear: () => {},
-      },
-      configurable: true,
-    })
+    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('unavailable') })
+    jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new Error('unavailable') })
     renderWithProvider()
     await userEvent.click(screen.getByRole('button'))
     // DOM class changed → toggleTheme ran to completion without the error escaping
     expect(document.documentElement.classList.contains('dark')).toBe(true)
-    // Restore
-    Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
   })
 
   it('throws if useTheme is called outside ThemeProvider', () => {
