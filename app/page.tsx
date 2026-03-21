@@ -15,7 +15,7 @@ import CurrencyRow from '@/components/CurrencyRow'
 import SkeletonRow from '@/components/SkeletonRow'
 import CurrencyPicker from '@/components/CurrencyPicker'
 import { convert, formatAmount } from '@/lib/converter'
-import { loadCurrencies, saveCurrencies } from '@/lib/storage'
+import { loadCurrencies, saveCurrencies, loadActiveValue, saveActiveValue, loadActiveCurrency, saveActiveCurrency } from '@/lib/storage'
 import { getCurrency } from '@/lib/currencies'
 
 interface RatesData {
@@ -56,7 +56,6 @@ function SortableCurrencyRow(props: SortableCurrencyRowProps) {
     <div ref={setNodeRef} style={style}>
       <CurrencyRow
         code={currency.code}
-        name={currency.name}
         flag={currency.flag}
         value={displayValue}
         isActive={props.code === props.activeCurrency}
@@ -91,10 +90,21 @@ export default function Home() {
   useEffect(() => {
     const saved = loadCurrencies()
     setCurrencies(saved)
-    setActiveCurrency(saved[0])
+    const savedCurrency = loadActiveCurrency()
+    setActiveCurrency(savedCurrency && saved.includes(savedCurrency) ? savedCurrency : saved[0])
+    setActiveValue(loadActiveValue())
     setStorageLoaded(true)
   }, [])
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Persist activeValue and activeCurrency to localStorage on change
+  useEffect(() => {
+    if (storageLoaded) saveActiveValue(activeValue)
+  }, [activeValue, storageLoaded])
+
+  useEffect(() => {
+    if (storageLoaded) saveActiveCurrency(activeCurrency)
+  }, [activeCurrency, storageLoaded])
 
   // Fetch live rates
   useEffect(() => {
@@ -105,8 +115,18 @@ export default function Home() {
   }, [])
 
   const handleFocus = useCallback((code: string) => {
+    if (code !== activeCurrency && ratesData) {
+      const converted = formatAmount(
+        convert(
+          parseFloat(activeValue) || 0,
+          ratesData.rates[activeCurrency] ?? 1,
+          ratesData.rates[code] ?? 1,
+        )
+      )
+      setActiveValue(converted)
+    }
     setActiveCurrency(code)
-  }, [])
+  }, [activeCurrency, activeValue, ratesData])
 
   const handleChange = useCallback((code: string, value: string) => {
     setActiveCurrency(code)
@@ -150,7 +170,7 @@ export default function Home() {
   const isLoading = !storageLoaded || !ratesData
 
   return (
-    <main className="max-w-[430px] mx-auto min-h-screen flex flex-col">
+    <main className="max-w-[430px] md:max-w-[600px] mx-auto min-h-screen flex flex-col">
       <Header updatedAt={ratesData?.updatedAt ?? null} />
 
       {loadError && (

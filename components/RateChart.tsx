@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip,
 } from 'recharts'
+import { loadActiveValue, saveActiveValue } from '@/lib/storage'
 
 interface RateChartProps {
   base: string
@@ -63,6 +64,13 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
 
   const gradientId = `rateGradient-${base}-${target}`
 
+  // Hydrate baseAmount from localStorage (browser-only API, unavailable during SSR)
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    setBaseAmount(loadActiveValue())
+  }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   // Reset loading/error synchronously when deps change, then fetch
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -91,12 +99,12 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
   const convertedAmount = currentRate != null ? (parsedBase * currentRate) : null
 
   function handleBaseInput(raw: string) {
-    // split-on-decimal to avoid dropping digits
     const parts = raw.replace(/[^0-9.]/g, '').split('.')
     const sanitised = parts.length > 1
       ? parts[0] + '.' + parts.slice(1).join('')
       : parts[0]
     setBaseAmount(sanitised)
+    saveActiveValue(sanitised)
   }
 
   return (

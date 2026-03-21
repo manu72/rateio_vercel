@@ -31,6 +31,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Synchronous inline script to prevent FOUC in dark mode.
+            React warns that scripts in components aren't re-executed on the client —
+            that's correct and intended: this only needs to run from the SSR HTML,
+            before the first paint, to add the 'dark' class early enough. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${inter.className} bg-slate-100 dark:bg-slate-950 min-h-screen`}>

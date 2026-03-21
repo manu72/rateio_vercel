@@ -3,7 +3,6 @@ import CurrencyRow from '@/components/CurrencyRow'
 
 const defaultProps = {
   code: 'USD',
-  name: 'US Dollar',
   flag: '🇺🇸',
   value: '5.42',
   isActive: false,
@@ -18,10 +17,9 @@ const defaultProps = {
 describe('CurrencyRow', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  it('renders currency code, name and flag', () => {
+  it('renders currency code and flag', () => {
     render(<CurrencyRow {...defaultProps} />)
     expect(screen.getByText('USD')).toBeInTheDocument()
-    expect(screen.getByText('US Dollar')).toBeInTheDocument()
     expect(screen.getByText('🇺🇸')).toBeInTheDocument()
   })
 
@@ -33,7 +31,7 @@ describe('CurrencyRow', () => {
   it('applies active styling when isActive is true', () => {
     render(<CurrencyRow {...defaultProps} isActive={true} />)
     const row = screen.getByRole('textbox').closest('div[data-testid="currency-row"]')
-    expect(row).toHaveClass('ring-2')
+    expect(row).toHaveClass('bg-blue-50')
   })
 
   it('strips non-numeric characters and collapses multiple decimals', () => {
@@ -67,6 +65,11 @@ describe('CurrencyRow', () => {
 
   it('hides chart icon when showChartIcon is false', () => {
     render(<CurrencyRow {...defaultProps} showChartIcon={false} />)
+    expect(screen.queryByRole('button', { name: /chart/i })).not.toBeInTheDocument()
+  })
+
+  it('hides chart icon for the active currency (same-to-same chart is meaningless)', () => {
+    render(<CurrencyRow {...defaultProps} isActive={true} showChartIcon={true} />)
     expect(screen.queryByRole('button', { name: /chart/i })).not.toBeInTheDocument()
   })
 

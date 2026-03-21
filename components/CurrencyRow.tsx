@@ -5,7 +5,6 @@ import { GripVertical, TrendingUp, X } from 'lucide-react'
 
 interface CurrencyRowProps {
   code: string
-  name: string
   flag: string
   value: string
   isActive: boolean
@@ -18,7 +17,7 @@ interface CurrencyRowProps {
 }
 
 export default function CurrencyRow({
-  code, name, flag, value, isActive, showChartIcon,
+  code, flag, value, isActive, showChartIcon,
   onFocus, onChange, onChartClick, onRemove, dragHandleProps,
 }: CurrencyRowProps) {
   const [swiped, setSwiped] = useState(false)
@@ -69,11 +68,13 @@ export default function CurrencyRow({
       <div
         data-testid="currency-row"
         style={{ transform: swiped ? 'translateX(-80px)' : 'translateX(0)', transition: 'transform 0.2s' }}
-        className={`group flex items-center gap-3 bg-white dark:bg-slate-800 pr-3 pl-0 py-3 shadow-sm transition-shadow ${
-          isActive ? 'ring-2 ring-blue-500 rounded-xl' : 'rounded-xl'
+        className={`group flex items-center gap-3 pr-3 pl-0 py-3 rounded-xl transition-all duration-200 ${
+          isActive
+            ? 'bg-blue-50 dark:bg-blue-950/60 shadow-md'
+            : 'bg-white dark:bg-slate-800 shadow-sm'
         }`}
       >
-        {/* Drag handle — wraps flag + name to create a large touch target */}
+        {/* Drag handle — wraps flag + code to create a large touch target */}
         <div
           className="flex items-center gap-3 cursor-grab active:cursor-grabbing touch-none select-none self-stretch"
           aria-label="drag to reorder"
@@ -81,10 +82,7 @@ export default function CurrencyRow({
         >
           <GripVertical size={16} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
           <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{flag}</span>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{code}</span>
-            <span className="text-xs text-slate-400 truncate">{name}</span>
-          </div>
+          <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{code}</span>
         </div>
 
         {/* Amount input */}
@@ -94,14 +92,16 @@ export default function CurrencyRow({
           value={value}
           onFocus={onFocus}
           onChange={handleChange}
-          className={`ml-auto text-xl font-semibold text-right w-28 bg-transparent outline-none text-slate-900 dark:text-slate-100 border-b ${
-            isActive ? 'border-blue-500' : 'border-transparent'
+          className={`ml-auto text-2xl font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 outline-none transition-colors text-slate-900 dark:text-slate-100 ${
+            isActive
+              ? 'bg-white dark:bg-slate-900 ring-1 ring-blue-300 dark:ring-blue-700'
+              : 'bg-slate-100 dark:bg-slate-700/50'
           }`}
           aria-label={`${code} amount`}
         />
 
-        {/* Chart icon */}
-        {showChartIcon && (
+        {/* Chart icon — hidden for active currency since base-to-same chart is meaningless */}
+        {showChartIcon && !isActive && (
           <button
             onClick={onChartClick}
             aria-label="chart"
