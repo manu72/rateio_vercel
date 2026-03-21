@@ -52,7 +52,7 @@ export default function CurrencyRow({
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl"
+      className="relative overflow-x-clip overflow-y-visible rounded-xl"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -170,7 +170,7 @@ function ChartDisabledIcon({
       {tooltipVisible && (
         <div
           role="tooltip"
-          className="absolute right-0 top-full mt-2 z-10 w-48 rounded-lg bg-slate-800 dark:bg-slate-700 px-3 py-2 text-xs text-white shadow-lg"
+          className="absolute right-0 bottom-full mb-2 z-10 w-48 rounded-lg bg-slate-800 dark:bg-slate-700 px-3 py-2 text-xs text-white shadow-lg"
         >
           Historical data is unavailable for this currency
         </div>
