@@ -6,6 +6,8 @@ import {
   CartesianGrid, Tooltip,
 } from 'recharts'
 import { loadActiveValue, saveActiveValue } from '@/lib/storage'
+import { getCurrency } from '@/lib/currencies'
+import { formatAmount } from '@/lib/converter'
 
 interface RateChartProps {
   base: string
@@ -196,24 +198,25 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
 
       {/* Conversion card */}
       {currentRate != null && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden">
-          <div className="flex items-center px-4 py-3 gap-3">
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 shadow-md">
+            <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{getCurrency(base)?.flag}</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{base}</span>
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
               value={baseAmount}
               onChange={e => handleBaseInput(e.target.value)}
-              className="flex-1 min-w-0 bg-transparent text-lg font-semibold text-slate-900 dark:text-slate-100 outline-none"
+              className="ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 outline-none transition-colors text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 ring-1 ring-blue-300 dark:ring-blue-700"
               aria-label={`Amount in ${base}`}
             />
-            <span className="text-sm font-semibold text-slate-400 shrink-0">{base}</span>
           </div>
-          <div className="h-px bg-slate-100 dark:bg-slate-700 mx-4" />
-          <div className="flex items-center px-4 py-3 gap-3">
-            <span className="flex-1 min-w-0 text-lg font-semibold text-slate-900 dark:text-slate-100 truncate">
-              {convertedAmount != null ? convertedAmount.toFixed(4) : '—'}
+          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm">
+            <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{getCurrency(target)?.flag}</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{target}</span>
+            <span className="ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700/50 truncate">
+              {convertedAmount != null ? formatAmount(convertedAmount) : '—'}
             </span>
-            <span className="text-sm font-semibold text-slate-400 shrink-0">{target}</span>
           </div>
         </div>
       )}
