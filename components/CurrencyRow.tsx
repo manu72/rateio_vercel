@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { GripVertical, TrendingUp, X } from 'lucide-react'
 
 interface CurrencyRowProps {
@@ -52,7 +53,7 @@ export default function CurrencyRow({
 
   return (
     <div
-      className="relative overflow-x-clip overflow-y-visible rounded-xl"
+      className="relative overflow-hidden rounded-xl"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -155,9 +156,23 @@ function ChartDisabledIcon({
   onShow: () => void
   onHide: () => void
 }) {
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
+
+  const updatePos = useCallback(() => {
+    if (!btnRef.current) return
+    const rect = btnRef.current.getBoundingClientRect()
+    setPos({ top: rect.top - 8, right: window.innerWidth - rect.right })
+  }, [])
+
+  useEffect(() => {
+    if (tooltipVisible) updatePos()
+  }, [tooltipVisible, updatePos])
+
   return (
-    <div className="relative">
+    <>
       <button
+        ref={btnRef}
         type="button"
         onClick={onShow}
         onMouseEnter={onShow}
@@ -167,14 +182,16 @@ function ChartDisabledIcon({
       >
         <TrendingUp size={20} />
       </button>
-      {tooltipVisible && (
+      {tooltipVisible && pos && createPortal(
         <div
           role="tooltip"
-          className="absolute right-0 bottom-full mb-2 z-10 w-48 rounded-lg bg-slate-800 dark:bg-slate-700 px-3 py-2 text-xs text-white shadow-lg"
+          style={{ top: pos.top, right: pos.right, transform: 'translateY(-100%)' }}
+          className="fixed z-50 w-48 rounded-lg bg-slate-800 dark:bg-slate-700 px-3 py-2 text-xs text-white shadow-lg"
         >
           Historical data is unavailable for this currency
-        </div>
+        </div>,
+        document.body,
       )}
-    </div>
+    </>
   )
 }
