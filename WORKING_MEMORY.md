@@ -7,8 +7,10 @@
 
 Mobile-first currency converter (max 430px viewport). Core features complete and functional:
 - Converter page with drag-to-reorder, add/remove currencies, instant conversion
-- Historical chart page with 1D/1W/1M/1Y/5Y time ranges
+- Historical chart page with 1D/1W/1M/1Y/5Y time ranges, clickable target currency picker
 - Dual-source API: Frankfurter (primary, free ECB data) + ExchangeRate-API (fallback, exotic currencies)
+- Dark/light mode toggle with FOUC-prevention script and ThemeProvider context
+- Lucide icons throughout (replaced emoji icons)
 - Vercel Analytics integrated
 - Unit tests (Jest) and E2E tests (Playwright) in place
 
@@ -39,17 +41,20 @@ history/route.ts: Frankfurter first (try-catch) → ExchangeRate-API fallback (t
 - Input sanitisation: split-on-decimal (not regex replace)
 - `storageLoaded` flag distinguishes loading state from empty selection
 - AbortController in useEffect for all client-side fetches
-- Dark mode via Tailwind `dark:` variants (v4, no config file)
+- Dark/light mode: FOUC-prevention inline script in `layout.tsx` + `ThemeProvider` context + toggle in `Header.tsx`
+- Theme preference: stored in localStorage only when it differs from OS preference; removed when they match
 
 ## Recent Changes
 
-- **Vercel Analytics** (`326d385`): Added `@vercel/analytics` to `layout.tsx`
-- **Chart rate values** (`d2f23ee`): Added rate values to chart lines in `RateChart.tsx`
-- **Resizable chart + logo** (`6f054fd`): Logo asset and resizable chart component
-- **Fallback resilience** (`eef3e12`, `6f054fd`, `efe774b`): Fixed three progressively discovered gaps in error handling — Frankfurter fetch throw, ExchangeRate-API fetch throw, and `.json()` parse failures
-- **Frankfurter integration** (`9d7f034`): Added as primary rate source to reduce ExchangeRate-API dependency
-- **Favicon + manifest** (`4b6006c`): App icons and `site.webmanifest`
-- **Mobile drag fix** (`d80cfed`): `touch-none` on drag handles
+- **Dark/light mode toggle** (`8d7661f`–`8503c5d`): ThemeProvider context, FOUC-prevention script, toggle button in Header and chart page, E2E tests
+- **Lucide icons** (`75549c9`): Replaced emoji icons with `lucide-react`; bold-fill hover animations and press feedback
+- **Chart page target picker** (`db36b4c`): Clickable target currency opens picker on chart page
+- **Chart UX** (`2105158`, `e3c40be`): Nudge Y-axis labels above grid lines, larger back button, cursor-pointer on interactive elements
+- **CurrencyPicker fix** (`3feab71`): Constrain picker to 430px, close on backdrop click
+- **Vercel Analytics** (`326d385`): `@vercel/analytics` in `layout.tsx`
+- **Chart rate values** (`d2f23ee`): Rate values on chart lines in `RateChart.tsx`
+- **Fallback resilience** (`eef3e12`, `6f054fd`, `efe774b`): Fixed three gaps — Frankfurter fetch throw, ExchangeRate-API fetch throw, `.json()` parse failures
+- **Frankfurter integration** (`9d7f034`): Primary rate source (free ECB data)
 
 ## Lessons Learned
 

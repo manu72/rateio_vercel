@@ -11,7 +11,7 @@ Built to replace the Android app *Currency Converter Plus* — optimised for a 4
 - **Drag-to-reorder** — long-press (mobile) or grab the handle (desktop) to rearrange rows
 - **Historical charts** — tap the chart icon on any row to see rate trends over 1D / 1W / 1M / 1Y / 5Y
 - **Add/remove currencies** — searchable picker modal, up to 10 currencies at once
-- **Dark mode** — follows system preference automatically
+- **Dark/light mode** — follows system preference by default, with a manual toggle that persists your choice
 - **Persistent selection** — chosen currencies saved to localStorage and restored on reload
 - **Skeleton loading** — animated placeholders while rates load
 
@@ -23,7 +23,9 @@ Built to replace the Android app *Currency Converter Plus* — optimised for a 4
 | Language | TypeScript (strict mode) |
 | Styling | Tailwind CSS v4 |
 | Charts | Recharts (AreaChart) |
+| Icons | Lucide React |
 | Drag & drop | dnd-kit |
+| Analytics | Vercel Analytics |
 | Unit tests | Jest + React Testing Library |
 | E2E tests | Playwright (Mobile Chrome / Pixel 5 viewport) |
 | Rate data | Frankfurter API (primary) + ExchangeRate-API (fallback) |
@@ -34,20 +36,21 @@ Built to replace the Android app *Currency Converter Plus* — optimised for a 4
 rateio/
 ├── app/
 │   ├── page.tsx                        # Main converter page
-│   ├── layout.tsx                      # Root layout (Inter font, metadata)
+│   ├── layout.tsx                      # Root layout (Inter font, metadata, ThemeProvider, FOUC script)
 │   ├── globals.css                     # Tailwind v4 imports + base styles
 │   ├── api/
 │   │   ├── rates/route.ts             # /api/rates — live rates, hourly revalidation
 │   │   └── history/route.ts           # /api/history — historical rates, daily revalidation
 │   └── chart/
 │       └── [base]/[target]/
-│           └── page.tsx               # Historical chart page for a currency pair
+│           └── page.tsx               # Historical chart page with target currency picker
 ├── components/
 │   ├── CurrencyRow.tsx                # Single currency row (input, drag handle, chart/remove)
 │   ├── CurrencyPicker.tsx             # Full-screen modal to search and add currencies
 │   ├── RateChart.tsx                  # Area chart with time range selector
-│   ├── Header.tsx                     # App header with last-updated timestamp
-│   └── SkeletonRow.tsx                # Loading placeholder row
+│   ├── Header.tsx                     # App header with last-updated timestamp + theme toggle
+│   ├── SkeletonRow.tsx                # Loading placeholder row
+│   └── ThemeProvider.tsx              # Dark/light mode context with localStorage persistence
 ├── lib/
 │   ├── converter.ts                   # Pure conversion math + number formatting
 │   ├── currencies.ts                  # Static metadata for ~170 currencies (code, name, flag)
@@ -58,11 +61,15 @@ rateio/
 │   │   └── history.test.ts
 │   ├── components/
 │   │   ├── CurrencyRow.test.tsx
-│   │   └── CurrencyPicker.test.tsx
+│   │   ├── CurrencyPicker.test.tsx
+│   │   ├── Header.test.tsx
+│   │   └── ThemeProvider.test.tsx
+│   ├── chart-toggle.test.tsx
 │   ├── converter.test.ts
 │   └── storage.test.ts
 ├── e2e/
-│   └── converter.spec.ts             # Playwright E2E tests
+│   ├── converter.spec.ts             # Playwright E2E — converter flow
+│   └── theme-toggle.spec.ts          # Playwright E2E — dark/light mode toggle
 ├── docs/
 │   └── superpowers/specs/             # Design specifications
 ├── package.json
@@ -154,7 +161,7 @@ npm run lint         # ESLint
 - Input sanitisation uses a split-on-decimal approach (not regex replace)
 - `storageLoaded` boolean flag distinguishes loading state from empty selection
 - AbortController pattern in `useEffect` for all fetch calls to prevent race conditions
-- Dark mode via Tailwind `dark:` variants (no config needed with Tailwind v4)
+- Dark/light mode: FOUC-prevention inline script in `layout.tsx` sets class before paint; `ThemeProvider` context syncs React state; localStorage stores preference only when it differs from OS default
 
 ## Deployment
 
@@ -162,8 +169,10 @@ Designed for [Vercel](https://vercel.com/) with automatic deploys on push to `ma
 
 ## Recent Updates
 
-- **Frankfurter API integration** — added as the primary rate source (free, no API key required for ~30 ECB currencies), with ExchangeRate-API as fallback for exotic currencies and outages
-- **Fallback resilience** — Frankfurter fetch in the history route wrapped in try-catch to ensure network-level failures (DNS, timeout) correctly fall through to the ExchangeRate-API fallback
-- **Favicon and web manifest** — added app metadata and icons
-- **Mobile drag support** — fixed `touch-none` on drag handles for proper mobile touch behaviour
-- **E2E test suite** — Playwright tests covering the core converter flow on a Pixel 5 viewport
+- **Dark/light mode toggle** — manual theme toggle in the header and chart page, with FOUC-prevention and localStorage persistence; E2E tests included
+- **Lucide icons** — replaced emoji icons with Lucide React; bold-fill hover animations and press feedback on interactive elements
+- **Chart page target picker** — clickable target currency on the chart page opens a currency picker to switch pairs
+- **Chart UX improvements** — Y-axis label positioning, larger back button, cursor-pointer states
+- **Vercel Analytics** — integrated via `@vercel/analytics`
+- **Fallback resilience** — all fetch and `.json()` calls in both API routes fully guarded with try-catch
+- **Frankfurter API integration** — primary rate source (free ECB data for ~30 currencies), with ExchangeRate-API fallback for exotic currencies
