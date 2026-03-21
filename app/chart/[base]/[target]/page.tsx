@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useTheme } from '@/components/ThemeProvider'
 import RateChart from '@/components/RateChart'
 import CurrencyPicker from '@/components/CurrencyPicker'
@@ -39,10 +40,11 @@ export default function ChartPage() {
         <button
           type="button"
           onClick={() => router.push('/')}
-          aria-label="go back"
-          className="self-start text-blue-500 p-2 -ml-2 cursor-pointer"
+          aria-label="Go to home page"
+          className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100 cursor-pointer self-start hover:opacity-70 transition-opacity"
         >
-          <ChevronLeftIcon />
+          <Image src="/favicon-32x32.png" alt="" width={24} height={24} />
+          Rateio
         </button>
         <p className="text-slate-500 text-sm">Invalid currency pair.</p>
       </main>
@@ -51,17 +53,18 @@ export default function ChartPage() {
 
   return (
     <main className="max-w-[430px] mx-auto min-h-screen flex flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+      {/* Header — 3-column: logo (left), currency pair (center), theme toggle (right) */}
+      <header className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
         <button
           type="button"
           onClick={() => router.push('/')}
-          aria-label="go back"
-          className="text-blue-500 p-2 -ml-2 cursor-pointer"
+          aria-label="Go to home page"
+          className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100 cursor-pointer justify-self-start hover:opacity-70 transition-opacity"
         >
-          <ChevronLeftIcon />
+          <Image src="/favicon-32x32.png" alt="" width={24} height={24} />
+          Rateio
         </button>
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-2 justify-self-center">
           <span className="text-lg">{baseCurrency.flag}</span>
           <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
             {base} →
@@ -80,11 +83,11 @@ export default function ChartPage() {
           onClick={toggleTheme}
           aria-label="Toggle theme"
           suppressHydrationWarning
-          className="flex items-center justify-center w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"
+          className="flex items-center justify-center w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1 justify-self-end"
         >
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </button>
-      </div>
+      </header>
 
       {/* Chart */}
       <div className="flex-1 px-4 py-4">
@@ -102,14 +105,6 @@ export default function ChartPage() {
         />
       )}
     </main>
-  )
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
   )
 }
 
