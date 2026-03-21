@@ -170,7 +170,7 @@ export default function Home() {
   const isLoading = !storageLoaded || !ratesData
 
   return (
-    <main className="max-w-[430px] mx-auto min-h-screen flex flex-col">
+    <main className="max-w-[430px] md:max-w-[600px] mx-auto min-h-screen flex flex-col">
       <Header updatedAt={ratesData?.updatedAt ?? null} />
 
       {loadError && (

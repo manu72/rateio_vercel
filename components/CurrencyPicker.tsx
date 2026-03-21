@@ -33,7 +33,7 @@ export default function CurrencyPicker({ selected, onAdd, onClose }: CurrencyPic
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex justify-center" onClick={onClose}>
-      <div className="w-full max-w-[430px] flex flex-col bg-white dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-[430px] md:max-w-[600px] flex flex-col bg-white dark:bg-slate-900" onClick={e => e.stopPropagation()}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
         <span className="flex-1 text-base font-bold text-slate-900 dark:text-slate-100">

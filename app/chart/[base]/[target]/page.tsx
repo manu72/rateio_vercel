@@ -36,7 +36,7 @@ export default function ChartPage() {
 
   if (!baseCurrency || !targetCurrency) {
     return (
-      <main className="max-w-[430px] mx-auto p-4 flex flex-col gap-4">
+      <main className="max-w-[430px] md:max-w-[600px] mx-auto p-4 flex flex-col gap-4">
         <button
           type="button"
           onClick={() => router.push('/')}
@@ -52,7 +52,7 @@ export default function ChartPage() {
   }
 
   return (
-    <main className="max-w-[430px] mx-auto min-h-screen flex flex-col">
+    <main className="max-w-[430px] md:max-w-[600px] mx-auto min-h-screen flex flex-col">
       {/* Header — 3-column: logo (left), currency pair (center), theme toggle (right) */}
       <header className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
         <button
