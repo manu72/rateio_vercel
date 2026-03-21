@@ -56,7 +56,6 @@ function SortableCurrencyRow(props: SortableCurrencyRowProps) {
     <div ref={setNodeRef} style={style}>
       <CurrencyRow
         code={currency.code}
-        name={currency.name}
         flag={currency.flag}
         value={displayValue}
         isActive={props.code === props.activeCurrency}
