@@ -28,12 +28,16 @@ Built to replace the Android app *Currency Converter Plus* — optimised for a 4
 | Analytics | Vercel Analytics |
 | Unit tests | Jest + React Testing Library |
 | E2E tests | Playwright (Mobile Chrome / Pixel 5 viewport) |
+| CI | GitHub Actions (lint → Jest → Playwright) |
 | Rate data | Frankfurter API (primary) + ExchangeRate-API (fallback) |
 
 ## Project Structure
 
 ```
 rateio/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                     # GitHub Actions CI (lint → Jest → Playwright)
 ├── app/
 │   ├── page.tsx                        # Main converter page
 │   ├── layout.tsx                      # Root layout (Inter font, metadata, ThemeProvider, FOUC script)
@@ -47,7 +51,7 @@ rateio/
 ├── components/
 │   ├── CurrencyRow.tsx                # Single currency row (input, drag handle, chart/remove)
 │   ├── CurrencyPicker.tsx             # Full-screen modal to search and add currencies
-│   ├── RateChart.tsx                  # Area chart with time range selector
+│   ├── RateChart.tsx                  # Area chart with time range selector + resizable height
 │   ├── Header.tsx                     # App header with last-updated timestamp + theme toggle
 │   ├── SkeletonRow.tsx                # Loading placeholder row
 │   └── ThemeProvider.tsx              # Dark/light mode context with localStorage persistence
@@ -70,8 +74,6 @@ rateio/
 ├── e2e/
 │   ├── converter.spec.ts             # Playwright E2E — converter flow
 │   └── theme-toggle.spec.ts          # Playwright E2E — dark/light mode toggle
-├── docs/
-│   └── superpowers/specs/             # Design specifications
 ├── package.json
 ├── tsconfig.json
 ├── jest.config.ts
@@ -169,10 +171,10 @@ Designed for [Vercel](https://vercel.com/) with automatic deploys on push to `ma
 
 ## Recent Updates
 
+- **GitHub Actions CI** — automated lint, unit tests, and E2E tests on every push/PR to `main`; API secret scoped to E2E step only
+- **Chart card redesign** — base and converted values displayed in a separate card on the chart page
 - **Dark/light mode toggle** — manual theme toggle in the header and chart page, with FOUC-prevention and localStorage persistence; E2E tests included
 - **Lucide icons** — replaced emoji icons with Lucide React; bold-fill hover animations and press feedback on interactive elements
 - **Chart page target picker** — clickable target currency on the chart page opens a currency picker to switch pairs
-- **Chart UX improvements** — Y-axis label positioning, larger back button, cursor-pointer states
-- **Vercel Analytics** — integrated via `@vercel/analytics`
 - **Fallback resilience** — all fetch and `.json()` calls in both API routes fully guarded with try-catch
 - **Frankfurter API integration** — primary rate source (free ECB data for ~30 currencies), with ExchangeRate-API fallback for exotic currencies
