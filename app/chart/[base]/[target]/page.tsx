@@ -75,9 +75,6 @@ export default function ChartPage() {
             {target} <span className="text-lg">{targetCurrency.flag}</span>
           </button>
         </div>
-        <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 shrink-0">
-          {currentRate !== null ? `1 ${base} = ${currentRate.toFixed(4)} ${target}` : '—'}
-        </span>
         <button
           type="button"
           onClick={toggleTheme}
@@ -91,7 +88,7 @@ export default function ChartPage() {
 
       {/* Chart */}
       <div className="flex-1 px-4 py-4">
-        <RateChart base={base} target={target} />
+        <RateChart base={base} target={target} currentRate={currentRate} />
       </div>
 
       {pickerOpen && (
