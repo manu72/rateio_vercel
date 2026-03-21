@@ -15,7 +15,7 @@ import CurrencyRow from '@/components/CurrencyRow'
 import SkeletonRow from '@/components/SkeletonRow'
 import CurrencyPicker from '@/components/CurrencyPicker'
 import { convert, formatAmount } from '@/lib/converter'
-import { loadCurrencies, saveCurrencies, loadActiveValue, saveActiveValue } from '@/lib/storage'
+import { loadCurrencies, saveCurrencies, loadActiveValue, saveActiveValue, loadActiveCurrency, saveActiveCurrency } from '@/lib/storage'
 import { getCurrency } from '@/lib/currencies'
 
 interface RatesData {
@@ -90,16 +90,21 @@ export default function Home() {
   useEffect(() => {
     const saved = loadCurrencies()
     setCurrencies(saved)
-    setActiveCurrency(saved[0])
+    const savedCurrency = loadActiveCurrency()
+    setActiveCurrency(savedCurrency && saved.includes(savedCurrency) ? savedCurrency : saved[0])
     setActiveValue(loadActiveValue())
     setStorageLoaded(true)
   }, [])
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Persist activeValue to localStorage on change
+  // Persist activeValue and activeCurrency to localStorage on change
   useEffect(() => {
     if (storageLoaded) saveActiveValue(activeValue)
   }, [activeValue, storageLoaded])
+
+  useEffect(() => {
+    if (storageLoaded) saveActiveCurrency(activeCurrency)
+  }, [activeCurrency, storageLoaded])
 
   // Fetch live rates
   useEffect(() => {
