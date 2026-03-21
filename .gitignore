@@ -41,6 +41,7 @@ yarn-error.log*
 .claude/settings.local.json
 test-results/
 /docs/superpowers/
+WORKING_MEMORY.md
 
 # vercel
 .vercel
