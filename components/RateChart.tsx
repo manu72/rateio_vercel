@@ -7,7 +7,6 @@ import {
 } from 'recharts'
 import { loadActiveValue, saveActiveValue } from '@/lib/storage'
 import { getCurrency } from '@/lib/currencies'
-import { formatAmount } from '@/lib/converter'
 
 interface RateChartProps {
   base: string
@@ -221,7 +220,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
               <span className="text-xs font-normal text-slate-400 dark:text-slate-500 truncate">{getCurrency(target)?.name}</span>
             </div>
             <span className="ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700/50 truncate">
-              {convertedAmount != null ? formatAmount(convertedAmount) : '—'}
+              {convertedAmount != null ? convertedAmount.toFixed(4) : '—'}
             </span>
           </div>
         </div>
