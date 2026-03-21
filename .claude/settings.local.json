@@ -11,7 +11,6 @@
       "Bash(rsync:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(git add:*)",
       "WebSearch",
       "mcp__plugin_context7_context7__resolve-library-id",
       "WebFetch(domain:frankfurter.dev)",
@@ -19,9 +18,7 @@
       "WebFetch(domain:www.exchangerate-api.com)",
       "WebFetch(domain:github.com)",
       "Bash(npm test:*)",
-      "Bash(git commit:*)",
       "Bash(ls:*)",
-      "Bash(node:*)",
       "Bash(git diff:*)"
     ]
   }
