@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider, useTheme } from '@/components/ThemeProvider'
 
@@ -31,10 +31,10 @@ afterEach(() => {
 })
 
 describe('ThemeProvider', () => {
-  it('reads initial theme from html class (dark)', () => {
+  it('reads initial theme from html class (dark)', async () => {
     document.documentElement.classList.add('dark')
     renderWithProvider()
-    expect(screen.getByTestId('theme')).toHaveTextContent('dark')
+    await waitFor(() => expect(screen.getByTestId('theme')).toHaveTextContent('dark'))
   })
 
   it('reads initial theme from html class (light)', () => {
