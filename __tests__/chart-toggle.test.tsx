@@ -2,9 +2,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from '@/components/ThemeProvider'
 
+// mockUseParams is accessible inside jest.mock factory because it starts with 'mock'
+const mockUseParams = jest.fn(() => ({ base: 'aud', target: 'eur' }))
+
 // Mock next/navigation — required for useParams and useRouter
 jest.mock('next/navigation', () => ({
-  useParams: () => ({ base: 'aud', target: 'eur' }),
+  useParams: () => mockUseParams(),
   useRouter: () => ({ push: jest.fn() }),
 }))
 
@@ -24,6 +27,7 @@ function renderChart() {
 beforeEach(() => {
   document.documentElement.classList.remove('dark')
   localStorage.clear()
+  mockUseParams.mockReturnValue({ base: 'aud', target: 'eur' })
 })
 
 describe('ChartPage theme toggle', () => {
@@ -39,5 +43,11 @@ describe('ChartPage theme toggle', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(true)
     await userEvent.click(btn)
     expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+
+  it('does not render toggle button in the invalid-pair error path', () => {
+    mockUseParams.mockReturnValue({ base: 'ZZZ', target: 'XXX' })
+    renderChart()
+    expect(screen.queryByRole('button', { name: /toggle theme/i })).toBeNull()
   })
 })
