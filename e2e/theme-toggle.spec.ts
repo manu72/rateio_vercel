@@ -2,9 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Theme toggle — main page', () => {
   test.beforeEach(async ({ page }) => {
-    // Start with a clean slate: no saved preference
-    await page.goto('/')
-    await page.evaluate(() => localStorage.removeItem('theme'))
+    await page.addInitScript(() => localStorage.removeItem('theme'))
     await page.goto('/')
     await page.waitForSelector('[data-testid="currency-row"]')
   })
@@ -56,10 +54,9 @@ test.describe('Theme toggle — main page', () => {
 
 test.describe('Theme toggle — chart page', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => localStorage.removeItem('theme'))
     await page.goto('/')
-    await page.evaluate(() => localStorage.removeItem('theme'))
     await page.waitForSelector('[data-testid="currency-row"]')
-    // Navigate to a chart page
     const chartButtons = page.getByRole('button', { name: /chart/i })
     await chartButtons.first().click()
     await expect(page).toHaveURL(/\/chart\//)
@@ -91,8 +88,7 @@ test.describe('Theme toggle — OS preference', () => {
       colorScheme: 'dark',
     })
     const page = await context.newPage()
-    await page.goto('/')
-    await page.evaluate(() => localStorage.removeItem('theme'))
+    await page.addInitScript(() => localStorage.removeItem('theme'))
     await page.goto('/')
     await page.waitForSelector('[data-testid="currency-row"]')
 
@@ -105,8 +101,7 @@ test.describe('Theme toggle — OS preference', () => {
       colorScheme: 'light',
     })
     const page = await context.newPage()
-    await page.goto('/')
-    await page.evaluate(() => localStorage.removeItem('theme'))
+    await page.addInitScript(() => localStorage.removeItem('theme'))
     await page.goto('/')
     await page.waitForSelector('[data-testid="currency-row"]')
 
