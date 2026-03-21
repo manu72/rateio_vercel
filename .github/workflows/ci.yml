@@ -9,8 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      EXCHANGERATE_API_KEY: ${{ secrets.EXCHANGERATE_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +31,8 @@ jobs:
 
       - name: E2E tests
         run: npm run test:e2e
+        env:
+          EXCHANGERATE_API_KEY: ${{ secrets.EXCHANGERATE_API_KEY }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
