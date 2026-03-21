@@ -61,6 +61,8 @@ export default function RateChart({ base, target }: RateChartProps) {
 
   const gradientId = `rateGradient-${base}-${target}`
 
+  // Reset loading/error synchronously when deps change, then fetch
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true)
@@ -78,6 +80,7 @@ export default function RateChart({ base, target }: RateChartProps) {
       .finally(() => setLoading(false))
     return () => controller.abort()
   }, [base, target, range])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const high = data.length ? data.reduce((m, d) => Math.max(m, d.rate), -Infinity) : null
   const low = data.length ? data.reduce((m, d) => Math.min(m, d.rate), Infinity) : null

@@ -19,9 +19,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // trade-off documented in the spec.
   const [isDark, setIsDark] = useState(false)
 
+  // Sync React state with DOM class set by the FOUC-prevention inline script
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'))
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function toggleTheme() {
     const nextDark = !isDark

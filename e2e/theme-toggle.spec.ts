@@ -28,27 +28,42 @@ test.describe('Theme toggle — main page', () => {
     await expect(page.locator('html')).not.toHaveClass(/dark/)
   })
 
-  test('dark mode preference persists across page reload', async ({ page }) => {
+  test('dark mode preference persists across page reload', async ({ browser }) => {
+    // Fresh context without addInitScript — persistence tests must not clear
+    // localStorage on reload, since that's the value under test.
+    const context = await browser.newContext({ colorScheme: 'light' })
+    const page = await context.newPage()
+    await page.goto('/')
+    await page.waitForSelector('[data-testid="currency-row"]')
+
     const btn = page.getByRole('button', { name: /toggle theme/i })
     await btn.click()
     await expect(page.locator('html')).toHaveClass(/dark/)
 
     await page.reload()
     await page.waitForSelector('[data-testid="currency-row"]')
-    // Dark class should be restored without flash (set by inline script)
     await expect(page.locator('html')).toHaveClass(/dark/)
+    await context.close()
   })
 
-  test('light mode preference persists across page reload', async ({ page }) => {
-    // Switch to dark then back to light
+  test('light mode preference persists across page reload', async ({ browser }) => {
+    // Dark OS context so toggling to light stores 'light' in localStorage
+    // (preference differs from OS default). Fresh context without addInitScript
+    // so the stored value survives the reload.
+    const context = await browser.newContext({ colorScheme: 'dark' })
+    const page = await context.newPage()
+    await page.goto('/')
+    await page.waitForSelector('[data-testid="currency-row"]')
+
     const btn = page.getByRole('button', { name: /toggle theme/i })
-    await btn.click()
+    await expect(page.locator('html')).toHaveClass(/dark/)
     await btn.click()
     await expect(page.locator('html')).not.toHaveClass(/dark/)
 
     await page.reload()
     await page.waitForSelector('[data-testid="currency-row"]')
     await expect(page.locator('html')).not.toHaveClass(/dark/)
+    await context.close()
   })
 })
 
