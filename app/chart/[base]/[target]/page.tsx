@@ -40,9 +40,9 @@ export default function ChartPage() {
           type="button"
           onClick={() => router.push('/')}
           aria-label="go back"
-          className="self-start text-blue-500 text-xl leading-none"
+          className="self-start text-blue-500 p-2 -ml-2 cursor-pointer"
         >
-          ‹
+          <ChevronLeftIcon />
         </button>
         <p className="text-slate-500 text-sm">Invalid currency pair.</p>
       </main>
@@ -57,9 +57,9 @@ export default function ChartPage() {
           type="button"
           onClick={() => router.push('/')}
           aria-label="go back"
-          className="text-blue-500 text-xl leading-none"
+          className="text-blue-500 p-2 -ml-2 cursor-pointer"
         >
-          ‹
+          <ChevronLeftIcon />
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-lg">{baseCurrency.flag}</span>
@@ -70,7 +70,7 @@ export default function ChartPage() {
             type="button"
             onClick={() => setPickerOpen(true)}
             aria-label={`Switch target currency, currently ${target}`}
-            className="flex items-center gap-1 text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center gap-1 text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-blue-500 dark:hover:text-blue-400 transition-colors cursor-pointer"
           >
             {target} <span className="text-lg">{targetCurrency.flag}</span>
           </button>
@@ -105,6 +105,14 @@ export default function ChartPage() {
         />
       )}
     </main>
+  )
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
   )
 }
 
