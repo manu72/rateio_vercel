@@ -92,10 +92,10 @@ export default function RateChart({ base, target }: RateChartProps) {
             type="button"
             aria-label={RANGE_LABELS[r]}
             onClick={() => setRange(r)}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+            className={`flex-1 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-all duration-150 active:scale-95 ${
               range === r
                 ? 'bg-blue-500 text-white'
-                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:bg-blue-500 hover:text-white'
             }`}
           >
             {r}
@@ -123,7 +123,7 @@ export default function RateChart({ base, target }: RateChartProps) {
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" vertical={false} />
               <XAxis dataKey="date" hide />
               <YAxis
                 domain={['auto', 'auto']}
@@ -132,7 +132,7 @@ export default function RateChart({ base, target }: RateChartProps) {
                 width={50}
                 tickCount={4}
                 tickFormatter={formatTick}
-                tick={{ fontSize: 10, fill: '#94a3b8' }}
+                tick={{ fontSize: 10, fill: '#94a3b8', dy: -6 }}
                 axisLine={false}
                 tickLine={false}
               />
