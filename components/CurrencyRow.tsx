@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { GripVertical, TrendingUp, X } from 'lucide-react'
 
@@ -162,10 +162,10 @@ function ChartDisabledIcon({
   const updatePos = useCallback(() => {
     if (!btnRef.current) return
     const rect = btnRef.current.getBoundingClientRect()
-    setPos({ top: rect.top - 8, right: window.innerWidth - rect.right })
+    setPos({ top: rect.top - 8, right: document.documentElement.clientWidth - rect.right })
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (tooltipVisible) updatePos()
   }, [tooltipVisible, updatePos])
 
