@@ -201,7 +201,10 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 shadow-md">
             <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{getCurrency(base)?.flag}</span>
-            <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{base}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{base}</span>
+              <span className="text-xs font-normal text-slate-400 dark:text-slate-500 truncate">{getCurrency(base)?.name}</span>
+            </div>
             <input
               type="text"
               inputMode="decimal"
@@ -213,7 +216,10 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
           </div>
           <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm">
             <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{getCurrency(target)?.flag}</span>
-            <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{target}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{target}</span>
+              <span className="text-xs font-normal text-slate-400 dark:text-slate-500 truncate">{getCurrency(target)?.name}</span>
+            </div>
             <span className="ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700/50 truncate">
               {convertedAmount != null ? formatAmount(convertedAmount) : '—'}
             </span>
