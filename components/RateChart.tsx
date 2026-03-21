@@ -123,7 +123,7 @@ export default function RateChart({ base, target }: RateChartProps) {
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" vertical={false} />
               <XAxis dataKey="date" hide />
               <YAxis
                 domain={['auto', 'auto']}
@@ -132,7 +132,7 @@ export default function RateChart({ base, target }: RateChartProps) {
                 width={50}
                 tickCount={4}
                 tickFormatter={formatTick}
-                tick={{ fontSize: 10, fill: '#94a3b8' }}
+                tick={{ fontSize: 10, fill: '#94a3b8', dy: -6 }}
                 axisLine={false}
                 tickLine={false}
               />
