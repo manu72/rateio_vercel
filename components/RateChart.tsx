@@ -5,12 +5,12 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip,
 } from 'recharts'
+import { loadActiveValue, saveActiveValue } from '@/lib/storage'
 
 interface RateChartProps {
   base: string
   target: string
   currentRate?: number | null
-  initialAmount?: number
 }
 
 type Range = '1D' | '1W' | '1M' | '1Y' | '5Y'
@@ -36,13 +36,13 @@ const MIN_HEIGHT = 120
 const MAX_HEIGHT = 500
 const DEFAULT_HEIGHT = 220
 
-export default function RateChart({ base, target, currentRate, initialAmount = 1 }: RateChartProps) {
+export default function RateChart({ base, target, currentRate }: RateChartProps) {
   const [range, setRange] = useState<Range>('1M')
   const [data, setData] = useState<DataPoint[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
-  const [baseAmount, setBaseAmount] = useState(String(initialAmount))
+  const [baseAmount, setBaseAmount] = useState('1')
   const dragStartY = useRef<number | null>(null)
   const dragStartHeight = useRef(DEFAULT_HEIGHT)
 
@@ -63,6 +63,13 @@ export default function RateChart({ base, target, currentRate, initialAmount = 1
   }, [])
 
   const gradientId = `rateGradient-${base}-${target}`
+
+  // Hydrate baseAmount from localStorage (browser-only API, unavailable during SSR)
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    setBaseAmount(loadActiveValue())
+  }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Reset loading/error synchronously when deps change, then fetch
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -92,12 +99,12 @@ export default function RateChart({ base, target, currentRate, initialAmount = 1
   const convertedAmount = currentRate != null ? (parsedBase * currentRate) : null
 
   function handleBaseInput(raw: string) {
-    // split-on-decimal to avoid dropping digits
     const parts = raw.replace(/[^0-9.]/g, '').split('.')
     const sanitised = parts.length > 1
       ? parts[0] + '.' + parts.slice(1).join('')
       : parts[0]
     setBaseAmount(sanitised)
+    saveActiveValue(sanitised)
   }
 
   return (

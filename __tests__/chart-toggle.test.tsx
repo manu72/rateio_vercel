@@ -6,11 +6,10 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 const mockUseParams = jest.fn(() => ({ base: 'aud', target: 'eur' }))
 const mockPush = jest.fn()
 
-// Mock next/navigation — required for useParams, useRouter, and useSearchParams
+// Mock next/navigation — required for useParams and useRouter
 jest.mock('next/navigation', () => ({
   useParams: () => mockUseParams(),
   useRouter: () => ({ push: mockPush }),
-  useSearchParams: () => new URLSearchParams(),
 }))
 
 // Mock fetch so the rate API call doesn't fail in tests
