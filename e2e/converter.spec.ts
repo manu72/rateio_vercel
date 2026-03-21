@@ -47,7 +47,7 @@ test.describe('Converter', () => {
     // Time range buttons should be visible
     await expect(page.getByRole('button', { name: '1 month' })).toBeVisible()
     // Go back
-    await page.getByRole('button', { name: /go back/i }).click()
+    await page.getByRole('button', { name: /go to home page/i }).click()
     await expect(page).toHaveURL('/')
   })
 })

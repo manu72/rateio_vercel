@@ -91,7 +91,7 @@ test.describe('Theme toggle — chart page', () => {
     await btn.click()
     await expect(page.locator('html')).toHaveClass(/dark/)
 
-    await page.getByRole('button', { name: /go back/i }).click()
+    await page.getByRole('button', { name: /go to home page/i }).click()
     await expect(page).toHaveURL('/')
     await expect(page.locator('html')).toHaveClass(/dark/)
   })
