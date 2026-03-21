@@ -8,6 +8,7 @@ import RateChart from '@/components/RateChart'
 import CurrencyPicker from '@/components/CurrencyPicker'
 import { getCurrency } from '@/lib/currencies'
 import { convert } from '@/lib/converter'
+import { loadCurrencies, saveCurrencies } from '@/lib/storage'
 
 export default function ChartPage() {
   const params = useParams<{ base: string; target: string }>()
@@ -97,8 +98,13 @@ export default function ChartPage() {
       {pickerOpen && (
         <CurrencyPicker
           selected={[base, target]}
+          historicalOnly
           onAdd={(code) => {
             setPickerOpen(false)
+            const saved = loadCurrencies()
+            if (!saved.includes(code) && saved.length < 10) {
+              saveCurrencies([...saved, code])
+            }
             router.push(`/chart/${base}/${code}`)
           }}
           onClose={() => setPickerOpen(false)}

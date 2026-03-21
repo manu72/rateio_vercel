@@ -164,3 +164,21 @@ export const CURRENCIES: Currency[] = [
 export function getCurrency(code: string): Currency | undefined {
   return CURRENCIES.find(c => c.code === code)
 }
+
+/**
+ * Currencies supported by the Frankfurter API (ECB reference rates).
+ * Only these currencies have historical chart data available.
+ */
+export const FRANKFURTER_CURRENCIES = new Set([
+  'AUD', 'BGN', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK', 'EUR', 'GBP',
+  'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JPY', 'KRW', 'MXN', 'MYR',
+  'NOK', 'NZD', 'PHP', 'PLN', 'RON', 'SEK', 'SGD', 'THB', 'TRY', 'USD', 'ZAR',
+])
+
+export function hasHistoricalData(code: string): boolean {
+  return FRANKFURTER_CURRENCIES.has(code)
+}
+
+export const HISTORICAL_CURRENCIES: Currency[] = CURRENCIES.filter(
+  c => FRANKFURTER_CURRENCIES.has(c.code)
+)

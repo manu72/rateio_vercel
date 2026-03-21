@@ -1,28 +1,30 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CURRENCIES } from '@/lib/currencies'
+import { CURRENCIES, HISTORICAL_CURRENCIES } from '@/lib/currencies'
 
 interface CurrencyPickerProps {
   selected: string[]
   onAdd: (code: string) => void
   onClose: () => void
+  historicalOnly?: boolean
 }
 
-export default function CurrencyPicker({ selected, onAdd, onClose }: CurrencyPickerProps) {
+export default function CurrencyPicker({ selected, onAdd, onClose, historicalOnly }: CurrencyPickerProps) {
   const [query, setQuery] = useState('')
-  const atMax = selected.length >= 10
+  const atMax = !historicalOnly && selected.length >= 10
   const selectedSet = useMemo(() => new Set(selected), [selected])
 
+  const pool = historicalOnly ? HISTORICAL_CURRENCIES : CURRENCIES
   const q = query.trim().toLowerCase()
   const filtered = useMemo(
     () =>
       q
-        ? CURRENCIES.filter(
+        ? pool.filter(
             c => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
           )
-        : CURRENCIES,
-    [q]
+        : pool,
+    [q, pool]
   )
 
   function handleSelect(code: string) {

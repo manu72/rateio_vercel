@@ -1,13 +1,7 @@
 import { NextResponse } from 'next/server'
+import { FRANKFURTER_CURRENCIES } from '@/lib/currencies'
 
 export const revalidate = 86400 // 24 hours
-
-// Currencies supported by the Frankfurter API (ECB reference rates)
-const FRANKFURTER_CURRENCIES = new Set([
-  'AUD', 'BGN', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK', 'EUR', 'GBP',
-  'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JPY', 'KRW', 'MXN', 'MYR',
-  'NOK', 'NZD', 'PHP', 'PLN', 'RON', 'SEK', 'SGD', 'THB', 'TRY', 'USD', 'ZAR',
-])
 
 function toDateString(date: Date): string {
   return date.toISOString().split('T')[0]
