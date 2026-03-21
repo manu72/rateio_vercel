@@ -4,11 +4,12 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 
 // mockUseParams is accessible inside jest.mock factory because it starts with 'mock'
 const mockUseParams = jest.fn(() => ({ base: 'aud', target: 'eur' }))
+const mockPush = jest.fn()
 
 // Mock next/navigation — required for useParams and useRouter
 jest.mock('next/navigation', () => ({
   useParams: () => mockUseParams(),
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }))
 
 // Mock fetch so the rate API call doesn't fail in tests
@@ -28,6 +29,7 @@ beforeEach(() => {
   document.documentElement.classList.remove('dark')
   localStorage.clear()
   mockUseParams.mockReturnValue({ base: 'aud', target: 'eur' })
+  mockPush.mockReset()
 })
 
 describe('ChartPage theme toggle', () => {
@@ -49,5 +51,28 @@ describe('ChartPage theme toggle', () => {
     mockUseParams.mockReturnValue({ base: 'ZZZ', target: 'XXX' })
     renderChart()
     expect(screen.queryByRole('button', { name: /toggle theme/i })).toBeNull()
+  })
+})
+
+describe('ChartPage target currency picker', () => {
+  it('renders target currency as a clickable button', () => {
+    renderChart()
+    expect(screen.getByRole('button', { name: /switch target currency/i })).toBeInTheDocument()
+  })
+
+  it('opens currency picker when target button is clicked', async () => {
+    renderChart()
+    await userEvent.click(screen.getByRole('button', { name: /switch target currency/i }))
+    // CurrencyPicker renders a search input when open
+    expect(screen.getByRole('textbox')).toBeInTheDocument()
+  })
+
+  it('navigates to new chart URL when a currency is selected', async () => {
+    renderChart()
+    await userEvent.click(screen.getByRole('button', { name: /switch target currency/i }))
+    // CurrencyPicker lists currencies — click one that isn't the base (AUD)
+    const usdOption = screen.getByRole('option', { name: /USD/i })
+    await userEvent.click(usdOption)
+    expect(mockPush).toHaveBeenCalledWith('/chart/AUD/USD')
   })
 })

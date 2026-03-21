@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTheme } from '@/components/ThemeProvider'
 import RateChart from '@/components/RateChart'
+import CurrencyPicker from '@/components/CurrencyPicker'
 import { getCurrency } from '@/lib/currencies'
 import { convert } from '@/lib/converter'
 
@@ -14,6 +15,7 @@ export default function ChartPage() {
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
   const [currentRate, setCurrentRate] = useState<number | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   useEffect(() => {
     fetch('/api/rates')
@@ -61,10 +63,17 @@ export default function ChartPage() {
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-lg">{baseCurrency.flag}</span>
-          <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-            {base} → {target}
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            {base} →
           </span>
-          <span className="text-lg">{targetCurrency.flag}</span>
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            aria-label={`Switch target currency, currently ${target}`}
+            className="flex items-center gap-1 text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+          >
+            {target} <span className="text-lg">{targetCurrency.flag}</span>
+          </button>
         </div>
         <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 shrink-0">
           {currentRate !== null ? `1 ${base} = ${currentRate.toFixed(4)} ${target}` : '—'}
@@ -84,6 +93,17 @@ export default function ChartPage() {
       <div className="flex-1 px-4 py-4">
         <RateChart base={base} target={target} />
       </div>
+
+      {pickerOpen && (
+        <CurrencyPicker
+          selected={[base, target]}
+          onAdd={(code) => {
+            setPickerOpen(false)
+            router.push(`/chart/${base}/${code}`)
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
     </main>
   )
 }
