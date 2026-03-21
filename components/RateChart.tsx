@@ -9,6 +9,7 @@ import {
 interface RateChartProps {
   base: string
   target: string
+  currentRate?: number | null
 }
 
 type Range = '1D' | '1W' | '1M' | '1Y' | '5Y'
@@ -34,12 +35,13 @@ const MIN_HEIGHT = 120
 const MAX_HEIGHT = 500
 const DEFAULT_HEIGHT = 220
 
-export default function RateChart({ base, target }: RateChartProps) {
+export default function RateChart({ base, target, currentRate }: RateChartProps) {
   const [range, setRange] = useState<Range>('1M')
   const [data, setData] = useState<DataPoint[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
+  const [baseAmount, setBaseAmount] = useState('1')
   const dragStartY = useRef<number | null>(null)
   const dragStartHeight = useRef(DEFAULT_HEIGHT)
 
@@ -61,6 +63,8 @@ export default function RateChart({ base, target }: RateChartProps) {
 
   const gradientId = `rateGradient-${base}-${target}`
 
+  // Reset loading/error synchronously when deps change, then fetch
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true)
@@ -78,9 +82,22 @@ export default function RateChart({ base, target }: RateChartProps) {
       .finally(() => setLoading(false))
     return () => controller.abort()
   }, [base, target, range])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const high = data.length ? data.reduce((m, d) => Math.max(m, d.rate), -Infinity) : null
   const low = data.length ? data.reduce((m, d) => Math.min(m, d.rate), Infinity) : null
+
+  const parsedBase = parseFloat(baseAmount) || 0
+  const convertedAmount = currentRate != null ? (parsedBase * currentRate) : null
+
+  function handleBaseInput(raw: string) {
+    // split-on-decimal to avoid dropping digits
+    const parts = raw.replace(/[^0-9.]/g, '').split('.')
+    const sanitised = parts.length > 1
+      ? parts[0] + '.' + parts.slice(1).join('')
+      : parts[0]
+    setBaseAmount(sanitised)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -165,6 +182,30 @@ export default function RateChart({ base, target }: RateChartProps) {
             onPointerCancel={onDragEnd}
           >
             <div className="w-8 h-1 rounded-full bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors" />
+          </div>
+        </div>
+      )}
+
+      {/* Conversion card */}
+      {currentRate != null && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden">
+          <div className="flex items-center px-4 py-3 gap-3">
+            <input
+              type="number"
+              inputMode="decimal"
+              value={baseAmount}
+              onChange={e => handleBaseInput(e.target.value)}
+              className="flex-1 min-w-0 bg-transparent text-lg font-semibold text-slate-900 dark:text-slate-100 outline-none"
+              aria-label={`Amount in ${base}`}
+            />
+            <span className="text-sm font-semibold text-slate-400 shrink-0">{base}</span>
+          </div>
+          <div className="h-px bg-slate-100 dark:bg-slate-700 mx-4" />
+          <div className="flex items-center px-4 py-3 gap-3">
+            <span className="flex-1 min-w-0 text-lg font-semibold text-slate-900 dark:text-slate-100 truncate">
+              {convertedAmount != null ? convertedAmount.toFixed(4) : '—'}
+            </span>
+            <span className="text-sm font-semibold text-slate-400 shrink-0">{target}</span>
           </div>
         </div>
       )}

@@ -86,13 +86,15 @@ export default function Home() {
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 
-  // Load persisted currencies on mount
+  // Hydrate from localStorage after mount (browser-only API, unavailable during SSR)
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const saved = loadCurrencies()
     setCurrencies(saved)
     setActiveCurrency(saved[0])
     setStorageLoaded(true)
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Fetch live rates
   useEffect(() => {
