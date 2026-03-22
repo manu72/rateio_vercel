@@ -12,33 +12,33 @@ export async function GET() {
       : Promise.reject('no key'),
   ])
 
-  let frankfurterRates: Record<string, number> = {}
+  let exchangeRateApiRates: Record<string, number> = {}
   let updatedAt: string | null = null
-
-  if (frankfurterResult.status === 'fulfilled' && frankfurterResult.value.ok) {
-    try {
-      const data = await frankfurterResult.value.json()
-      frankfurterRates = { ...data.rates, USD: 1 }
-      updatedAt = data.date ?? null // "YYYY-MM-DD" — parseable by new Date()
-    } catch {
-      // Malformed body — skip this source, fall through to fallback
-    }
-  }
-
-  let fallbackRates: Record<string, number> = {}
 
   if (fallbackResult.status === 'fulfilled' && fallbackResult.value.ok) {
     try {
       const data = await fallbackResult.value.json()
-      fallbackRates = data.conversion_rates ?? {}
-      if (!updatedAt) updatedAt = data.time_last_update_utc ?? null
+      exchangeRateApiRates = data.conversion_rates ?? {}
+      updatedAt = data.time_last_update_utc ?? null
     } catch {
       // Malformed body — skip this source
     }
   }
 
-  // Frankfurter takes precedence for its currencies; fallback fills the rest
-  const rates = { ...fallbackRates, ...frankfurterRates }
+  let frankfurterRates: Record<string, number> = {}
+
+  if (frankfurterResult.status === 'fulfilled' && frankfurterResult.value.ok) {
+    try {
+      const data = await frankfurterResult.value.json()
+      frankfurterRates = { ...data.rates, USD: 1 }
+      if (!updatedAt) updatedAt = data.date ?? null
+    } catch {
+      // Malformed body — skip this source, fall through to other
+    }
+  }
+
+  // ExchangeRate-API is primary; Frankfurter fills gaps if ExchangeRate-API is missing currencies
+  const rates = { ...frankfurterRates, ...exchangeRateApiRates }
 
   if (Object.keys(rates).length === 0) {
     return NextResponse.json({ error: 'Failed to fetch rates' }, { status: 500 })

@@ -4,14 +4,14 @@ import Image from 'next/image'
 import { useTheme } from '@/components/ThemeProvider'
 
 interface HeaderProps {
-  updatedAt: string | null  // ISO string or null while loading
+  updatedAt: string | null
 }
 
 export default function Header({ updatedAt }: HeaderProps) {
   const { theme, toggleTheme } = useTheme()
 
   const label = updatedAt
-    ? `Updated ${formatRelative(updatedAt)}`
+    ? `Updated ${formatLocalDateTime(updatedAt)}`
     : 'Loading rates...'
 
   return (
@@ -21,7 +21,7 @@ export default function Header({ updatedAt }: HeaderProps) {
         Rateio
       </span>
       <div className="flex items-center gap-3">
-        <span className="text-xs text-slate-400">{label}</span>
+        <span className="text-xs text-slate-400" suppressHydrationWarning>{label}</span>
         <button
           type="button"
           onClick={toggleTheme}
@@ -53,12 +53,14 @@ function MoonIcon() {
   )
 }
 
-function formatRelative(isoString: string): string {
-  const diffMs = Date.now() - new Date(isoString).getTime()
-  const diffMins = Math.floor(diffMs / 60_000)
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  const diffHrs = Math.floor(diffMins / 60)
-  if (diffHrs < 24) return `${diffHrs}h ago`
-  return `${Math.floor(diffHrs / 24)}d ago`
+function formatLocalDateTime(dateString: string): string {
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) return dateString
+
+  const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+  const day = d.toLocaleDateString(undefined, { weekday: 'short' })
+  const date = d.getDate()
+  const month = d.toLocaleDateString(undefined, { month: 'short' })
+
+  return `${time} ${day} ${date} ${month}`
 }

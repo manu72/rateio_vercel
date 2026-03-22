@@ -30,20 +30,20 @@ describe('GET /api/rates', () => {
     process.env.EXCHANGERATE_API_KEY = 'test-key'
   })
 
-  it('merges both sources — Frankfurter takes precedence for its currencies', async () => {
+  it('merges both sources — ExchangeRate-API takes precedence for live rates', async () => {
     ;(global.fetch as jest.Mock).mockImplementation(makeFetchMock(true, true))
     const { GET } = await import('@/app/api/rates/route')
     const response = await GET()
     const data = await response.json()
 
-    expect(data.rates.EUR).toBe(0.922) // Frankfurter wins over ExchangeRate 0.920
-    expect(data.rates.GBP).toBe(0.782) // Frankfurter wins over ExchangeRate 0.780
-    expect(data.rates.AED).toBe(3.67)  // ExchangeRate fills exotic currencies
-    expect(data.updatedAt).toBe('2026-03-20')
+    expect(data.rates.EUR).toBe(0.92)  // ExchangeRate-API wins over Frankfurter 0.922
+    expect(data.rates.GBP).toBe(0.78)  // ExchangeRate-API wins over Frankfurter 0.782
+    expect(data.rates.AED).toBe(3.67)  // ExchangeRate-API provides exotic currencies
+    expect(data.updatedAt).toBe('Fri, 20 Mar 2026 00:00:00 +0000')
     expect(response.status).toBe(200)
   })
 
-  it('returns Frankfurter-only rates when no API key is set', async () => {
+  it('falls back to Frankfurter-only rates when no API key is set', async () => {
     delete process.env.EXCHANGERATE_API_KEY
     ;(global.fetch as jest.Mock).mockImplementation(makeFetchMock(true, false))
     const { GET } = await import('@/app/api/rates/route')
@@ -52,17 +52,19 @@ describe('GET /api/rates', () => {
 
     expect(data.rates.EUR).toBe(0.922)
     expect(data.rates.USD).toBe(1)
+    expect(data.updatedAt).toBe('2026-03-20')
     expect(response.status).toBe(200)
   })
 
-  it('falls back to ExchangeRate-API when Frankfurter fails', async () => {
-    ;(global.fetch as jest.Mock).mockImplementation(makeFetchMock(false, true))
+  it('falls back to Frankfurter when ExchangeRate-API fails', async () => {
+    ;(global.fetch as jest.Mock).mockImplementation(makeFetchMock(true, false))
     const { GET } = await import('@/app/api/rates/route')
     const response = await GET()
     const data = await response.json()
 
-    expect(data.rates.EUR).toBe(0.920)
-    expect(data.updatedAt).toBe('Fri, 20 Mar 2026 00:00:00 +0000')
+    expect(data.rates.EUR).toBe(0.922)
+    expect(data.rates.USD).toBe(1)
+    expect(data.updatedAt).toBe('2026-03-20')
     expect(response.status).toBe(200)
   })
 
