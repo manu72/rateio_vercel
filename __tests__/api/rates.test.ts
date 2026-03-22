@@ -56,15 +56,15 @@ describe('GET /api/rates', () => {
     expect(response.status).toBe(200)
   })
 
-  it('falls back to Frankfurter when ExchangeRate-API fails', async () => {
-    ;(global.fetch as jest.Mock).mockImplementation(makeFetchMock(true, false))
+  it('uses ExchangeRate-API alone when Frankfurter fails', async () => {
+    ;(global.fetch as jest.Mock).mockImplementation(makeFetchMock(false, true))
     const { GET } = await import('@/app/api/rates/route')
     const response = await GET()
     const data = await response.json()
 
-    expect(data.rates.EUR).toBe(0.922)
-    expect(data.rates.USD).toBe(1)
-    expect(data.updatedAt).toBe('2026-03-20')
+    expect(data.rates.EUR).toBe(0.920)
+    expect(data.rates.AED).toBe(3.67)
+    expect(data.updatedAt).toBe('Fri, 20 Mar 2026 00:00:00 +0000')
     expect(response.status).toBe(200)
   })
 
