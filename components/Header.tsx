@@ -54,7 +54,13 @@ function MoonIcon() {
 }
 
 function formatLocalDateTime(dateString: string): string {
-  const d = new Date(dateString)
+  let d: Date
+  const dateOnly = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (dateOnly) {
+    d = new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+  } else {
+    d = new Date(dateString)
+  }
   if (isNaN(d.getTime())) return dateString
 
   const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
