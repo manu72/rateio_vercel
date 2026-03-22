@@ -5,7 +5,7 @@ export const revalidate = 3600 // 1 hour
 export async function GET() {
   const apiKey = process.env.EXCHANGERATE_API_KEY
 
-  const [frankfurterResult, fallbackResult] = await Promise.allSettled([
+  const [frankfurterResult, exchangeRateResult] = await Promise.allSettled([
     fetch('https://api.frankfurter.dev/v1/latest?base=USD', { next: { revalidate: 3600 } }),
     apiKey
       ? fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`, { next: { revalidate: 3600 } })
@@ -15,9 +15,9 @@ export async function GET() {
   let exchangeRateApiRates: Record<string, number> = {}
   let updatedAt: string | null = null
 
-  if (fallbackResult.status === 'fulfilled' && fallbackResult.value.ok) {
+  if (exchangeRateResult.status === 'fulfilled' && exchangeRateResult.value.ok) {
     try {
-      const data = await fallbackResult.value.json()
+      const data = await exchangeRateResult.value.json()
       exchangeRateApiRates = data.conversion_rates ?? {}
       updatedAt = data.time_last_update_utc ?? null
     } catch {
