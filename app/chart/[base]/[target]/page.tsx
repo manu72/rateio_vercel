@@ -60,23 +60,23 @@ export default function ChartPage() {
           type="button"
           onClick={() => router.push('/')}
           aria-label="Go to home page"
-          className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100 cursor-pointer justify-self-start hover:opacity-70 transition-opacity"
+          className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-slate-100 cursor-pointer justify-self-start hover:opacity-70 transition-opacity"
         >
           <Image src="/favicon-32x32.png" alt="" width={24} height={24} />
           Rateio
         </button>
         <div className="flex items-center gap-2 justify-self-center">
-          <span className="text-lg">{baseCurrency.flag}</span>
-          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+          <span className="text-2xl leading-none">{baseCurrency.flag}</span>
+          <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
             {base} →
           </span>
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
             aria-label={`Switch target currency, currently ${target}`}
-            className="flex items-center gap-1 text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-blue-500 dark:hover:text-blue-400 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-lg font-bold text-slate-900 dark:text-slate-100 hover:text-blue-500 dark:hover:text-blue-400 transition-colors cursor-pointer"
           >
-            {target} <span className="text-lg">{targetCurrency.flag}</span>
+            {target} <span className="text-2xl leading-none">{targetCurrency.flag}</span>
           </button>
         </div>
         <button
