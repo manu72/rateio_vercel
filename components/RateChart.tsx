@@ -299,6 +299,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
         href={`https://www.google.com/search?q=exchange+rates+${base}+-+${target}`}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`View live ${base} to ${target} rates (opens in a new tab)`}
         className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-blue-500 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1"
       >
         View live rates
