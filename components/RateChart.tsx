@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip,
 } from 'recharts'
+import { ExternalLink } from 'lucide-react'
 import { loadActiveValue, saveActiveValue } from '@/lib/storage'
 import { getCurrency } from '@/lib/currencies'
 
@@ -239,6 +240,17 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
           </div>
         </div>
       )}
+
+      {/* View live rates on Google */}
+      <a
+        href={`https://www.google.com/search?q=exchange+rates+${base}+-+${target}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-blue-500 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1"
+      >
+        View live rates
+        <ExternalLink size={14} aria-hidden="true" />
+      </a>
     </div>
   )
 }
