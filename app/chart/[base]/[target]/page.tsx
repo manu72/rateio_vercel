@@ -42,7 +42,7 @@ export default function ChartPage() {
           type="button"
           onClick={() => router.push('/')}
           aria-label="Go to home page"
-          className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100 cursor-pointer self-start hover:opacity-70 transition-opacity"
+          className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-slate-100 cursor-pointer self-start hover:opacity-70 transition-opacity"
         >
           <Image src="/favicon-32x32.png" alt="" width={24} height={24} />
           Rateio
