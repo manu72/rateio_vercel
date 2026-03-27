@@ -9,7 +9,8 @@ Built to replace the Android app _Currency Converter Plus_ — optimised for a 4
 - **Instant conversion** — type in any currency row and all others update in real time
 - **170+ currencies** — covers all major and exotic currencies via dual API sources
 - **Drag-to-reorder** — long-press (mobile) or grab the handle (desktop) to rearrange rows
-- **Historical charts** — tap the chart icon on any row to see rate trends over 1D / 1W / 1M / 1Y / 5Y (disabled with tooltip for exotic currencies without historical data)
+- **Historical charts** — tap the chart icon on any row to see rate trends over 1D / 1W / 1M / 1Y / 5Y with bidirectional conversion (edit either currency amount); disabled with tooltip for exotic currencies without historical data
+- **View live rates** — one-tap link on the chart page opens Google for real-time exchange rates
 - **Add/remove currencies** — searchable picker modal, up to 10 currencies at once
 - **Dark/light mode** — follows system preference by default, with a manual toggle that persists your choice
 - **Persistent selection** — chosen currencies saved to localStorage and restored on reload
@@ -51,7 +52,7 @@ rateio/
 ├── components/
 │   ├── CurrencyRow.tsx                # Single currency row (input, drag handle, chart/remove)
 │   ├── CurrencyPicker.tsx             # Full-screen modal to search and add currencies
-│   ├── RateChart.tsx                  # Area chart with time range selector + resizable height
+│   ├── RateChart.tsx                  # Area chart with time range selector, bidirectional conversion + resizable height
 │   ├── Header.tsx                     # App header with last-updated timestamp + theme toggle
 │   ├── SkeletonRow.tsx                # Loading placeholder row
 │   └── ThemeProvider.tsx              # Dark/light mode context with localStorage persistence
@@ -171,6 +172,8 @@ Designed for [Vercel](https://vercel.com/) with automatic deploys on push to `ma
 
 ## Recent Updates
 
+- **Editable target value on chart page** — both base and target currency amounts are now editable inputs; editing either side recalculates the other, matching the home page UX
+- **View live rates link** — chart page includes a "View live rates" link that opens the currency pair in Google search for real-time rates
 - **ExchangeRate-API promoted to primary** — live rates now sourced primarily from ExchangeRate-API (170+ currencies); header shows absolute local datetime ("Updated HH:MM Day DD Mon") from its `time_last_update_utc`; Frankfurter fills gaps and provides historical data
 - **Exotic currency handling** — chart icon disabled with portal-based tooltip for currencies without Frankfurter historical data; chart page picker filtered to supported currencies only
 - **Chart card redesign** — conversion cards aligned with home page layout; full currency names displayed; 4-decimal precision for exchange rates; new chart currencies auto-added to home page
