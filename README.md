@@ -1,15 +1,15 @@
 # Rateio
 
-A mobile-first currency converter web app built with Next.js. Fetches live exchange rates from the [Frankfurter API](https://frankfurter.dev/) (ECB data, free) with [ExchangeRate-API](https://www.exchangerate-api.com/) as a fallback, and displays them in a clean, sortable UI with historical charts.
+A mobile-first currency converter web app built with Next.js. Fetches live exchange rates from [ExchangeRate-API](https://www.exchangerate-api.com/) (170+ currencies) with [Frankfurter](https://frankfurter.dev/) (free ECB data) providing historical charts and filling gaps, and displays them in a clean, sortable UI with historical charts.
 
-Built to replace the Android app _Currency Converter Plus_ — optimised for a 430px mobile viewport but fully responsive.
+Built to replace the Android app _Currency Converter Plus_ — optimised for a 430px mobile viewport (max 600px desktop) but fully responsive.
 
 ## Features
 
 - **Instant conversion** — type in any currency row and all others update in real time
 - **170+ currencies** — covers all major and exotic currencies via dual API sources
 - **Drag-to-reorder** — long-press (mobile) or grab the handle (desktop) to rearrange rows
-- **Historical charts** — tap the chart icon on any row to see rate trends over 1D / 1W / 1M / 1Y / 5Y
+- **Historical charts** — tap the chart icon on any row to see rate trends over 1D / 1W / 1M / 1Y / 5Y (disabled with tooltip for exotic currencies without historical data)
 - **Add/remove currencies** — searchable picker modal, up to 10 currencies at once
 - **Dark/light mode** — follows system preference by default, with a manual toggle that persists your choice
 - **Persistent selection** — chosen currencies saved to localStorage and restored on reload
@@ -29,7 +29,7 @@ Built to replace the Android app _Currency Converter Plus_ — optimised for a 4
 | Unit tests  | Jest + React Testing Library                            |
 | E2E tests   | Playwright (Mobile Chrome / Pixel 5 viewport)           |
 | CI          | GitHub Actions (lint → Jest → Playwright)               |
-| Rate data   | Frankfurter API (primary) + ExchangeRate-API (fallback) |
+| Rate data   | ExchangeRate-API (primary live rates) + Frankfurter (historical data, fallback) |
 
 ## Project Structure
 
@@ -57,7 +57,7 @@ rateio/
 │   └── ThemeProvider.tsx              # Dark/light mode context with localStorage persistence
 ├── lib/
 │   ├── converter.ts                   # Pure conversion math + number formatting
-│   ├── currencies.ts                  # Static metadata for ~170 currencies (code, name, flag)
+│   ├── currencies.ts                  # Static metadata for ~170 currencies + FRANKFURTER_CURRENCIES set
 │   └── storage.ts                     # localStorage persistence for selected currencies
 ├── __tests__/                         # Jest unit + component tests
 │   ├── api/
@@ -88,7 +88,7 @@ rateio/
 ### Prerequisites
 
 - Node.js 20+
-- An [ExchangeRate-API](https://www.exchangerate-api.com/) key (free tier available) — required for exotic currencies and as a fallback. Note the fallback API does not have historical data on the free tier so cannot generate charts.
+- An [ExchangeRate-API](https://www.exchangerate-api.com/) key (free tier available) — primary source for live rates across 170+ currencies. Note ExchangeRate-API's free tier does not support historical data, so charts use Frankfurter (no key needed).
 
 ### Installation
 
@@ -145,10 +145,10 @@ npm run lint         # ESLint
 ### Data Flow
 
 1. `app/page.tsx` fetches `/api/rates` on mount — live rates cached hourly via server-side revalidation
-2. `/api/rates` queries the Frankfurter API first (free ECB data for ~30 currencies), then merges with ExchangeRate-API for full coverage
+2. `/api/rates` queries ExchangeRate-API (primary, 170+ currencies) and Frankfurter (~30 ECB currencies) in parallel via `Promise.allSettled`, then merges — ExchangeRate-API rates take precedence; its `time_last_update_utc` drives the header timestamp
 3. Each currency row converts amounts using `lib/converter.ts` — pure math, no additional API calls
 4. Chart page fetches `/api/history?base=X&target=Y&days=N` — Frankfurter for supported pairs, ExchangeRate-API fallback for exotic ones (free tier does not support historical data/charts)
-5. Selected currencies are persisted to `localStorage` via `lib/storage.ts`
+5. Selected currencies are persisted to `localStorage` via `lib/storage.ts`; selecting a new currency on the chart page also adds it to the home page list
 
 ### API Routes
 
@@ -171,10 +171,11 @@ Designed for [Vercel](https://vercel.com/) with automatic deploys on push to `ma
 
 ## Recent Updates
 
-- **GitHub Actions CI** — automated lint, unit tests, and E2E tests on every push/PR to `main`; API secret scoped to E2E step only
-- **Chart card redesign** — base and converted values displayed in a separate card on the chart page
+- **ExchangeRate-API promoted to primary** — live rates now sourced primarily from ExchangeRate-API (170+ currencies); header shows absolute local datetime ("Updated HH:MM Day DD Mon") from its `time_last_update_utc`; Frankfurter fills gaps and provides historical data
+- **Exotic currency handling** — chart icon disabled with portal-based tooltip for currencies without Frankfurter historical data; chart page picker filtered to supported currencies only
+- **Chart card redesign** — conversion cards aligned with home page layout; full currency names displayed; 4-decimal precision for exchange rates; new chart currencies auto-added to home page
+- **Desktop viewport widened** — max width increased from 430px to 600px on desktop
 - **Dark/light mode toggle** — manual theme toggle in the header and chart page, with FOUC-prevention and localStorage persistence; E2E tests included
 - **Lucide icons** — replaced emoji icons with Lucide React; bold-fill hover animations and press feedback on interactive elements
-- **Chart page target picker** — clickable target currency on the chart page opens a currency picker to switch pairs
-- **Fallback resilience** — all fetch and `.json()` calls in both API routes fully guarded with try-catch
-- **Frankfurter API integration** — primary rate source (free ECB data for ~30 currencies), with ExchangeRate-API fallback for exotic currencies
+- **GitHub Actions CI** — automated lint, unit tests, and E2E tests on every push/PR to `main`; API secret scoped to E2E step only
+- **Fallback resilience** — all fetch and `.json()` calls in both API routes fully guarded with try-catch per source
