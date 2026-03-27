@@ -16,7 +16,7 @@ export default function Header({ updatedAt }: HeaderProps) {
 
   return (
     <header className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-      <span className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
+      <span className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-slate-100">
         <Image src="/favicon-32x32.png" alt="Rateio logo" width={24} height={24} />
         Rateio
       </span>
