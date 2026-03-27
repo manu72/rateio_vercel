@@ -44,7 +44,8 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
-  const [baseAmount, setBaseAmount] = useState('1')
+  const [activeSide, setActiveSide] = useState<'base' | 'target'>('base')
+  const [activeAmount, setActiveAmount] = useState('1')
   const dragStartY = useRef<number | null>(null)
   const dragStartHeight = useRef(DEFAULT_HEIGHT)
 
@@ -66,10 +67,10 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
 
   const gradientId = `rateGradient-${base}-${target}`
 
-  // Hydrate baseAmount from localStorage (browser-only API, unavailable during SSR)
+  // Hydrate activeAmount from localStorage (browser-only API, unavailable during SSR)
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    setBaseAmount(loadActiveValue())
+    setActiveAmount(loadActiveValue())
   }, [])
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -97,16 +98,45 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
   const high = data.length ? data.reduce((m, d) => Math.max(m, d.rate), -Infinity) : null
   const low = data.length ? data.reduce((m, d) => Math.min(m, d.rate), Infinity) : null
 
-  const parsedBase = parseFloat(baseAmount) || 0
-  const convertedAmount = currentRate != null ? (parsedBase * currentRate) : null
+  const parsedActive = parseFloat(activeAmount) || 0
 
-  function handleBaseInput(raw: string) {
+  const baseValue = activeSide === 'base'
+    ? activeAmount
+    : currentRate != null && currentRate !== 0
+      ? (parsedActive / currentRate).toFixed(4)
+      : ''
+
+  const targetValue = activeSide === 'target'
+    ? activeAmount
+    : currentRate != null
+      ? (parsedActive * currentRate).toFixed(4)
+      : ''
+
+  function handleFocus(side: 'base' | 'target') {
+    if (side === activeSide || currentRate == null) return
+    const derived = side === 'target'
+      ? (parsedActive * currentRate).toFixed(4)
+      : currentRate !== 0 ? (parsedActive / currentRate).toFixed(4) : '0'
+    setActiveSide(side)
+    setActiveAmount(derived)
+  }
+
+  function sanitiseNumeric(raw: string): string {
     const parts = raw.replace(/[^0-9.]/g, '').split('.')
-    const sanitised = parts.length > 1
+    return parts.length > 1
       ? parts[0] + '.' + parts.slice(1).join('')
       : parts[0]
-    setBaseAmount(sanitised)
-    saveActiveValue(sanitised)
+  }
+
+  function handleInput(side: 'base' | 'target', raw: string) {
+    const sanitised = sanitiseNumeric(raw)
+    setActiveSide(side)
+    setActiveAmount(sanitised)
+    if (side === 'base') {
+      saveActiveValue(sanitised)
+    } else if (currentRate != null && currentRate !== 0) {
+      saveActiveValue(((parseFloat(sanitised) || 0) / currentRate).toFixed(4))
+    }
   }
 
   return (
@@ -199,7 +229,11 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       {/* Conversion card */}
       {currentRate != null && (
         <div className="flex flex-col gap-2.5">
-          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 shadow-md">
+          <div className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+            activeSide === 'base'
+              ? 'bg-blue-50 dark:bg-blue-950/60 shadow-md'
+              : 'bg-white dark:bg-slate-800 shadow-sm'
+          }`}>
             <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{getCurrency(base)?.flag}</span>
             <div className="flex flex-col min-w-0">
               <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{base}</span>
@@ -208,21 +242,40 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
             <input
               type="text"
               inputMode="decimal"
-              value={baseAmount}
-              onChange={e => handleBaseInput(e.target.value)}
-              className="ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 outline-none transition-colors text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 ring-1 ring-blue-300 dark:ring-blue-700"
+              value={baseValue}
+              onFocus={() => handleFocus('base')}
+              onChange={e => handleInput('base', e.target.value)}
+              className={`ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 outline-none transition-colors text-slate-900 dark:text-slate-100 ${
+                activeSide === 'base'
+                  ? 'bg-white dark:bg-slate-900 ring-1 ring-blue-300 dark:ring-blue-700'
+                  : 'bg-slate-100 dark:bg-slate-700/50'
+              }`}
               aria-label={`Amount in ${base}`}
             />
           </div>
-          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm">
+          <div className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+            activeSide === 'target'
+              ? 'bg-blue-50 dark:bg-blue-950/60 shadow-md'
+              : 'bg-white dark:bg-slate-800 shadow-sm'
+          }`}>
             <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{getCurrency(target)?.flag}</span>
             <div className="flex flex-col min-w-0">
               <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{target}</span>
               <span className="text-xs font-normal text-slate-400 dark:text-slate-500 truncate">{getCurrency(target)?.name}</span>
             </div>
-            <span className="ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700/50 truncate">
-              {convertedAmount != null ? convertedAmount.toFixed(4) : '—'}
-            </span>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={targetValue}
+              onFocus={() => handleFocus('target')}
+              onChange={e => handleInput('target', e.target.value)}
+              className={`ml-auto text-lg font-semibold text-right flex-1 max-w-[200px] rounded-lg px-3 py-1.5 outline-none transition-colors text-slate-900 dark:text-slate-100 ${
+                activeSide === 'target'
+                  ? 'bg-white dark:bg-slate-900 ring-1 ring-blue-300 dark:ring-blue-700'
+                  : 'bg-slate-100 dark:bg-slate-700/50'
+              }`}
+              aria-label={`Amount in ${target}`}
+            />
           </div>
         </div>
       )}
