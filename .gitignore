@@ -42,7 +42,7 @@ yarn-error.log*
 test-results/
 /docs/superpowers/
 WORKING_MEMORY.md
-
+.sfdx/
 # vercel
 .vercel
 
