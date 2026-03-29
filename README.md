@@ -48,6 +48,7 @@ rateio/
 │   │   └── history/route.ts           # /api/history — historical rates, daily revalidation
 │   └── chart/
 │       └── [base]/[target]/
+│           ├── loading.tsx            # Skeleton loading state (Suspense boundary)
 │           └── page.tsx               # Historical chart page with target currency picker
 ├── components/
 │   ├── CurrencyRow.tsx                # Single currency row (input, drag handle, chart/remove)
@@ -172,6 +173,7 @@ Designed for [Vercel](https://vercel.com/) with automatic deploys on push to `ma
 
 ## Recent Updates
 
+- **Instant chart navigation** — tapping the chart icon now shows an immediate spinner, transitions to a loading skeleton, and navigates near-instantly via route prefetching (useTransition + loading.tsx + router.prefetch)
 - **Editable target value on chart page** — both base and target currency amounts are now editable inputs; editing either side recalculates the other, matching the home page UX
 - **View live rates link** — chart page includes a "View live rates" link that opens the currency pair in Google search for real-time rates
 - **ExchangeRate-API promoted to primary** — live rates now sourced primarily from ExchangeRate-API (170+ currencies); header shows absolute local datetime ("Updated HH:MM Day DD Mon") from its `time_last_update_utc`; Frankfurter fills gaps and provides historical data
