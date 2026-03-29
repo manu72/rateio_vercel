@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
@@ -31,6 +31,7 @@ interface SortableCurrencyRowProps {
   activeValue: string
   showChartIcon: boolean
   chartDisabled: boolean
+  chartPending: boolean
   onFocus: (code: string) => void
   onChange: (code: string, value: string) => void
   onChartClick: (code: string) => void
@@ -64,6 +65,7 @@ function SortableCurrencyRow(props: SortableCurrencyRowProps) {
         chartDisabled={props.chartDisabled}
         onFocus={() => props.onFocus(props.code)}
         onChange={v => props.onChange(props.code, v)}
+        chartPending={props.chartPending}
         onChartClick={() => props.onChartClick(props.code)}
         onRemove={() => props.onRemove(props.code)}
         dragHandleProps={{ ...attributes, ...listeners }}
@@ -81,6 +83,8 @@ export default function Home() {
   const [activeCurrency, setActiveCurrency] = useState<string>('')
   const [activeValue, setActiveValue] = useState<string>('1.00')
   const [showPicker, setShowPicker] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [pendingChartCode, setPendingChartCode] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -116,6 +120,15 @@ export default function Home() {
       .catch(() => setLoadError(true))
   }, [])
 
+  useEffect(() => {
+    if (!activeCurrency || currencies.length < 2) return
+    for (const code of currencies) {
+      if (code !== activeCurrency && hasHistoricalData(activeCurrency) && hasHistoricalData(code)) {
+        router.prefetch(`/chart/${activeCurrency}/${code}`)
+      }
+    }
+  }, [activeCurrency, currencies, router])
+
   const handleFocus = useCallback((code: string) => {
     if (code !== activeCurrency && ratesData) {
       const converted = formatAmount(
@@ -136,8 +149,11 @@ export default function Home() {
   }, [])
 
   const handleChartClick = useCallback((code: string) => {
-    router.push(`/chart/${activeCurrency}/${code}`)
-  }, [activeCurrency, router])
+    setPendingChartCode(code)
+    startTransition(() => {
+      router.push(`/chart/${activeCurrency}/${code}`)
+    })
+  }, [activeCurrency, router, startTransition])
 
   const handleAdd = useCallback((code: string) => {
     setCurrencies(prev => {
@@ -197,6 +213,7 @@ export default function Home() {
                   activeValue={activeValue}
                   showChartIcon={currencies.length >= 2}
                   chartDisabled={!hasHistoricalData(activeCurrency) || !hasHistoricalData(code)}
+                  chartPending={isPending && pendingChartCode === code}
                   onFocus={handleFocus}
                   onChange={handleChange}
                   onChartClick={handleChartClick}

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { GripVertical, TrendingUp, X } from 'lucide-react'
+import { GripVertical, TrendingUp, X, Loader2 } from 'lucide-react'
 
 interface CurrencyRowProps {
   code: string
@@ -11,6 +11,7 @@ interface CurrencyRowProps {
   isActive: boolean
   showChartIcon: boolean
   chartDisabled: boolean
+  chartPending: boolean
   onFocus: () => void
   onChange: (value: string) => void
   onChartClick: () => void
@@ -19,7 +20,7 @@ interface CurrencyRowProps {
 }
 
 export default function CurrencyRow({
-  code, flag, value, isActive, showChartIcon, chartDisabled,
+  code, flag, value, isActive, showChartIcon, chartDisabled, chartPending,
   onFocus, onChange, onChartClick, onRemove, dragHandleProps,
 }: CurrencyRowProps) {
   const [swiped, setSwiped] = useState(false)
@@ -111,11 +112,18 @@ export default function CurrencyRow({
         {/* Chart icon — hidden for active currency since base-to-same chart is meaningless */}
         {showChartIcon && !isActive && !chartDisabled && (
           <button
-            onClick={onChartClick}
-            aria-label="chart"
-            className="flex items-center justify-center w-[34px] h-[34px] rounded-[9px] cursor-pointer bg-green-50 text-green-600 hover:bg-[#86fcc8] hover:text-slate-900 active:scale-95 active:bg-[#6fe0b0] transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[#86fcc8] focus-visible:ring-offset-1 dark:bg-green-950 dark:text-green-400 dark:hover:bg-[#86fcc8] dark:hover:text-slate-900"
+            onClick={chartPending ? undefined : onChartClick}
+            disabled={chartPending}
+            aria-label={chartPending ? 'Loading chart' : 'chart'}
+            className={`flex items-center justify-center w-[34px] h-[34px] rounded-[9px] transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[#86fcc8] focus-visible:ring-offset-1 ${
+              chartPending
+                ? 'bg-green-100 text-green-500 dark:bg-green-900/60 dark:text-green-400'
+                : 'cursor-pointer bg-green-50 text-green-600 hover:bg-[#86fcc8] hover:text-slate-900 active:scale-95 active:bg-[#6fe0b0] dark:bg-green-950 dark:text-green-400 dark:hover:bg-[#86fcc8] dark:hover:text-slate-900'
+            }`}
           >
-            <TrendingUp size={20} />
+            {chartPending
+              ? <Loader2 size={20} className="motion-safe:animate-spin" />
+              : <TrendingUp size={20} />}
           </button>
         )}
 
