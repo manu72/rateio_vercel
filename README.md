@@ -40,12 +40,13 @@ rateio/
 │   └── workflows/
 │       └── ci.yml                     # GitHub Actions CI (lint → Jest → Playwright)
 ├── app/
-│   ├── page.tsx                        # Main converter page
-│   ├── layout.tsx                      # Root layout (Inter font, metadata, ThemeProvider, FOUC script)
-│   ├── globals.css                     # Tailwind v4 imports + base styles
+│   ├── page.tsx                       # Main converter page
+│   ├── layout.tsx                     # Root layout (Inter font, metadata, ThemeProvider, FOUC script)
+│   ├── globals.css                    # Tailwind v4 imports + base styles
+│   ├── favicon.ico                    # App favicon (Next.js convention)
 │   ├── api/
-│   │   ├── rates/route.ts             # /api/rates — live rates, hourly revalidation
-│   │   └── history/route.ts           # /api/history — historical rates, daily revalidation
+│   │   ├── rates/route.ts            # /api/rates — live rates, hourly revalidation
+│   │   └── history/route.ts          # /api/history — historical rates, daily revalidation
 │   └── chart/
 │       └── [base]/[target]/
 │           ├── loading.tsx            # Skeleton loading state (Suspense boundary)
@@ -61,6 +62,18 @@ rateio/
 │   ├── converter.ts                   # Pure conversion math + number formatting
 │   ├── currencies.ts                  # Static metadata for ~170 currencies + FRANKFURTER_CURRENCIES set
 │   └── storage.ts                     # localStorage persistence for selected currencies
+├── public/                            # Static assets served at /
+│   ├── android-chrome-192x192.png
+│   ├── android-chrome-512x512.png
+│   ├── apple-touch-icon.png
+│   ├── favicon-16x16.png
+│   ├── favicon-32x32.png
+│   ├── favicon.ico
+│   └── site.webmanifest              # PWA manifest (standalone display)
+├── docs/
+│   └── superpowers/                   # Planning specs and design docs from earlier sessions
+│       ├── plans/
+│       └── specs/
 ├── __tests__/                         # Jest unit + component tests
 │   ├── api/
 │   │   ├── rates.test.ts
@@ -79,6 +92,7 @@ rateio/
 ├── package.json
 ├── tsconfig.json
 ├── jest.config.ts
+├── jest.setup.ts                      # Jest setup: @testing-library/jest-dom + matchMedia stub
 ├── playwright.config.ts
 ├── eslint.config.mjs
 ├── postcss.config.mjs
