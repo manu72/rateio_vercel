@@ -18,18 +18,18 @@ Built to replace the Android app _Currency Converter Plus_ — optimised for a 4
 
 ## Tech Stack
 
-| Layer       | Technology                                              |
-| ----------- | ------------------------------------------------------- |
-| Framework   | Next.js 16 (App Router, React 19)                       |
-| Language    | TypeScript (strict mode)                                |
-| Styling     | Tailwind CSS v4                                         |
-| Charts      | Recharts (AreaChart)                                    |
-| Icons       | Lucide React                                            |
-| Drag & drop | dnd-kit                                                 |
-| Analytics   | Vercel Analytics                                        |
-| Unit tests  | Jest + React Testing Library                            |
-| E2E tests   | Playwright (Mobile Chrome / Pixel 5 viewport)           |
-| CI          | GitHub Actions (lint → Jest → Playwright)               |
+| Layer       | Technology                                                                      |
+| ----------- | ------------------------------------------------------------------------------- |
+| Framework   | Next.js 16 (App Router, React 19)                                               |
+| Language    | TypeScript (strict mode)                                                        |
+| Styling     | Tailwind CSS v4                                                                 |
+| Charts      | Recharts (AreaChart)                                                            |
+| Icons       | Lucide React                                                                    |
+| Drag & drop | dnd-kit                                                                         |
+| Analytics   | Vercel Analytics                                                                |
+| Unit tests  | Jest + React Testing Library                                                    |
+| E2E tests   | Playwright (Mobile Chrome / Pixel 5 viewport)                                   |
+| CI          | GitHub Actions (lint → Jest → Playwright)                                       |
 | Rate data   | ExchangeRate-API (primary live rates) + Frankfurter (historical data, fallback) |
 
 ## Project Structure
@@ -40,12 +40,13 @@ rateio/
 │   └── workflows/
 │       └── ci.yml                     # GitHub Actions CI (lint → Jest → Playwright)
 ├── app/
-│   ├── page.tsx                        # Main converter page
-│   ├── layout.tsx                      # Root layout (Inter font, metadata, ThemeProvider, FOUC script)
-│   ├── globals.css                     # Tailwind v4 imports + base styles
+│   ├── page.tsx                       # Main converter page
+│   ├── layout.tsx                     # Root layout (Inter font, metadata, ThemeProvider, FOUC script)
+│   ├── globals.css                    # Tailwind v4 imports + base styles
+│   ├── favicon.ico                    # App favicon (Next.js convention)
 │   ├── api/
-│   │   ├── rates/route.ts             # /api/rates — live rates, hourly revalidation
-│   │   └── history/route.ts           # /api/history — historical rates, daily revalidation
+│   │   ├── rates/route.ts            # /api/rates — live rates, hourly revalidation
+│   │   └── history/route.ts          # /api/history — historical rates, daily revalidation
 │   └── chart/
 │       └── [base]/[target]/
 │           ├── loading.tsx            # Skeleton loading state (Suspense boundary)
@@ -61,6 +62,14 @@ rateio/
 │   ├── converter.ts                   # Pure conversion math + number formatting
 │   ├── currencies.ts                  # Static metadata for ~170 currencies + FRANKFURTER_CURRENCIES set
 │   └── storage.ts                     # localStorage persistence for selected currencies
+├── public/                            # Static assets served at /
+│   ├── android-chrome-192x192.png
+│   ├── android-chrome-512x512.png
+│   ├── apple-touch-icon.png
+│   ├── favicon-16x16.png
+│   ├── favicon-32x32.png
+│   ├── favicon.ico
+│   └── site.webmanifest              # PWA manifest (standalone display)
 ├── __tests__/                         # Jest unit + component tests
 │   ├── api/
 │   │   ├── rates.test.ts
@@ -79,6 +88,7 @@ rateio/
 ├── package.json
 ├── tsconfig.json
 ├── jest.config.ts
+├── jest.setup.ts                      # Jest setup: @testing-library/jest-dom + matchMedia stub
 ├── playwright.config.ts
 ├── eslint.config.mjs
 ├── postcss.config.mjs
