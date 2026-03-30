@@ -18,18 +18,18 @@ Built to replace the Android app _Currency Converter Plus_ — optimised for a 4
 
 ## Tech Stack
 
-| Layer       | Technology                                              |
-| ----------- | ------------------------------------------------------- |
-| Framework   | Next.js 16 (App Router, React 19)                       |
-| Language    | TypeScript (strict mode)                                |
-| Styling     | Tailwind CSS v4                                         |
-| Charts      | Recharts (AreaChart)                                    |
-| Icons       | Lucide React                                            |
-| Drag & drop | dnd-kit                                                 |
-| Analytics   | Vercel Analytics                                        |
-| Unit tests  | Jest + React Testing Library                            |
-| E2E tests   | Playwright (Mobile Chrome / Pixel 5 viewport)           |
-| CI          | GitHub Actions (lint → Jest → Playwright)               |
+| Layer       | Technology                                                                      |
+| ----------- | ------------------------------------------------------------------------------- |
+| Framework   | Next.js 16 (App Router, React 19)                                               |
+| Language    | TypeScript (strict mode)                                                        |
+| Styling     | Tailwind CSS v4                                                                 |
+| Charts      | Recharts (AreaChart)                                                            |
+| Icons       | Lucide React                                                                    |
+| Drag & drop | dnd-kit                                                                         |
+| Analytics   | Vercel Analytics                                                                |
+| Unit tests  | Jest + React Testing Library                                                    |
+| E2E tests   | Playwright (Mobile Chrome / Pixel 5 viewport)                                   |
+| CI          | GitHub Actions (lint → Jest → Playwright)                                       |
 | Rate data   | ExchangeRate-API (primary live rates) + Frankfurter (historical data, fallback) |
 
 ## Project Structure
@@ -70,10 +70,6 @@ rateio/
 │   ├── favicon-32x32.png
 │   ├── favicon.ico
 │   └── site.webmanifest              # PWA manifest (standalone display)
-├── docs/
-│   └── superpowers/                   # Planning specs and design docs from earlier sessions
-│       ├── plans/
-│       └── specs/
 ├── __tests__/                         # Jest unit + component tests
 │   ├── api/
 │   │   ├── rates.test.ts
