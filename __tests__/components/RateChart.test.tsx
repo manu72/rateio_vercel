@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AreaChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AreaChart: ({ children }: { children: React.ReactNode }) => <svg>{children}</svg>,
   Area: () => null,
   XAxis: () => null,
   YAxis: () => null,
@@ -36,14 +36,16 @@ beforeEach(() => {
 })
 
 describe('RateChart conversion card', () => {
-  it('renders base and target inputs when currentRate is provided', () => {
+  it('renders base and target inputs when currentRate is provided', async () => {
     render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
     expect(screen.getByLabelText('Amount in EUR')).toBeInTheDocument()
     expect(screen.getByLabelText('Amount in USD')).toBeInTheDocument()
+    await screen.findByText('Period high')
   })
 
-  it('hides conversion card when currentRate is null', () => {
+  it('hides conversion card when currentRate is null', async () => {
     render(<RateChart base="EUR" target="USD" currentRate={null} />)
+    await screen.findByText('Period high')
     expect(screen.queryByLabelText('Amount in EUR')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Amount in USD')).not.toBeInTheDocument()
   })
