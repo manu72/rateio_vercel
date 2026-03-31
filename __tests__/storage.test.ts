@@ -40,8 +40,11 @@ describe('saveCurrencies', () => {
       value: { setItem: () => { throw new Error('unavailable') } },
       configurable: true,
     })
-    expect(() => saveCurrencies(['USD'])).not.toThrow()
-    Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    try {
+      expect(() => saveCurrencies(['USD'])).not.toThrow()
+    } finally {
+      Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    }
   })
 })
 
@@ -66,8 +69,11 @@ describe('loadActiveValue', () => {
       value: { getItem: () => { throw new Error('unavailable') } },
       configurable: true,
     })
-    expect(loadActiveValue()).toBe('1.00')
-    Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    try {
+      expect(loadActiveValue()).toBe('1.00')
+    } finally {
+      Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    }
   })
 })
 
@@ -83,8 +89,11 @@ describe('saveActiveValue', () => {
       value: { setItem: () => { throw new Error('unavailable') } },
       configurable: true,
     })
-    expect(() => saveActiveValue('10')).not.toThrow()
-    Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    try {
+      expect(() => saveActiveValue('10')).not.toThrow()
+    } finally {
+      Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    }
   })
 })
 
@@ -109,8 +118,11 @@ describe('loadActiveCurrency', () => {
       value: { getItem: () => { throw new Error('unavailable') } },
       configurable: true,
     })
-    expect(loadActiveCurrency()).toBeNull()
-    Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    try {
+      expect(loadActiveCurrency()).toBeNull()
+    } finally {
+      Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    }
   })
 })
 
@@ -126,7 +138,10 @@ describe('saveActiveCurrency', () => {
       value: { setItem: () => { throw new Error('unavailable') } },
       configurable: true,
     })
-    expect(() => saveActiveCurrency('GBP')).not.toThrow()
-    Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    try {
+      expect(() => saveActiveCurrency('GBP')).not.toThrow()
+    } finally {
+      Object.defineProperty(global, 'localStorage', { value: original, configurable: true })
+    }
   })
 })
