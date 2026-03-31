@@ -51,4 +51,38 @@ describe('CurrencyPicker', () => {
     fireEvent.click(screen.getByRole('button', { name: /close/i }))
     expect(defaultProps.onClose).toHaveBeenCalled()
   })
+
+  it('does not call onAdd when clicking an already-selected currency', () => {
+    render(<CurrencyPicker {...defaultProps} />)
+    const eurRow = screen.getByText('EUR').closest('li')!
+    fireEvent.click(eurRow)
+    expect(defaultProps.onAdd).not.toHaveBeenCalled()
+  })
+
+  it('shows no options when search matches nothing', async () => {
+    render(<CurrencyPicker {...defaultProps} />)
+    await userEvent.type(screen.getByPlaceholderText(/search/i), 'zzzznotacurrency')
+    expect(screen.queryAllByRole('option')).toHaveLength(0)
+  })
+
+  it('selects a currency via Enter key', () => {
+    render(<CurrencyPicker {...defaultProps} />)
+    const gbpRow = screen.getByText('GBP').closest('li')!
+    fireEvent.keyDown(gbpRow, { key: 'Enter' })
+    expect(defaultProps.onAdd).toHaveBeenCalledWith('GBP')
+  })
+
+  it('selects a currency via Space key', () => {
+    render(<CurrencyPicker {...defaultProps} />)
+    const gbpRow = screen.getByText('GBP').closest('li')!
+    fireEvent.keyDown(gbpRow, { key: ' ' })
+    expect(defaultProps.onAdd).toHaveBeenCalledWith('GBP')
+  })
+
+  it('calls onClose when clicking the backdrop overlay', () => {
+    const { container } = render(<CurrencyPicker {...defaultProps} />)
+    // Backdrop is the outermost fixed div
+    fireEvent.click(container.firstElementChild!)
+    expect(defaultProps.onClose).toHaveBeenCalled()
+  })
 })

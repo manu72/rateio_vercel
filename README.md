@@ -133,6 +133,7 @@ npm run dev          # Start dev server at http://localhost:3000
 ```bash
 npm test             # Run Jest unit tests
 npm run test:watch   # Jest in watch mode
+npm run test:coverage
 
 # E2E tests (one-time browser install first)
 npx playwright install chromium

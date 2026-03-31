@@ -23,6 +23,26 @@ describe('convert', () => {
   it('same currency returns same value', () => {
     expect(convert(42, rates['EUR'], rates['EUR'])).toBeCloseTo(42)
   })
+
+  it('returns NaN when value is NaN', () => {
+    expect(convert(NaN, 1, 1)).toBeNaN()
+  })
+
+  it('returns NaN when fromRate is NaN', () => {
+    expect(convert(10, NaN, 1)).toBeNaN()
+  })
+
+  it('returns 0 when toRate is 0', () => {
+    expect(convert(10, 1, 0)).toBe(0)
+  })
+
+  it('handles negative amounts as valid math', () => {
+    expect(convert(-10, 1, rates['EUR'])).toBeCloseTo(-9.22)
+  })
+
+  it('returns Infinity when value is Infinity', () => {
+    expect(convert(Infinity, 1, 1)).toBe(Infinity)
+  })
 })
 
 describe('formatAmount', () => {
