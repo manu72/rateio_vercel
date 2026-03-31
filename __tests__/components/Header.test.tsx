@@ -40,4 +40,15 @@ describe('Header', () => {
     await userEvent.click(btn)
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
+
+  it('displays formatted timestamp when updatedAt is provided', () => {
+    renderHeader('2025-03-15')
+    expect(screen.queryByText('Loading rates...')).not.toBeInTheDocument()
+    expect(screen.getByText(/^Updated/)).toBeInTheDocument()
+  })
+
+  it('falls back to raw string for an invalid date', () => {
+    renderHeader('not-a-date')
+    expect(screen.getByText('Updated not-a-date')).toBeInTheDocument()
+  })
 })

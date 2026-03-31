@@ -107,3 +107,20 @@ describe('Home page focus-switch conversion', () => {
     expect(screen.getByLabelText('GBP amount')).toHaveValue('108.70')
   })
 })
+
+describe('Home page loadError banner', () => {
+  it('shows error banner when rate fetch fails', async () => {
+    global.fetch = jest.fn(() => Promise.reject(new Error('network')))
+    render(
+      <ThemeProvider>
+        <Home />
+      </ThemeProvider>
+    )
+    await screen.findByText(/could not load rates/i)
+  })
+
+  it('does not show error banner when rate fetch succeeds', async () => {
+    await renderHome()
+    expect(screen.queryByText(/could not load rates/i)).not.toBeInTheDocument()
+  })
+})

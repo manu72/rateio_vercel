@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react'
 
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -142,5 +142,80 @@ describe('RateChart conversion card', () => {
     expect(screen.getByLabelText('Amount in EUR')).toHaveValue('12.34')
     fireEvent.change(screen.getByLabelText('Amount in EUR'), { target: { value: '1.2.3' } })
     expect(screen.getByLabelText('Amount in EUR')).toHaveValue('1.23')
+  })
+})
+
+describe('RateChart history fetch UX', () => {
+  it('shows error message when history fetch fails', async () => {
+    ;(global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve({ ok: false } as Response)
+    )
+    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    await screen.findByText('Failed to load history')
+    expect(screen.queryByText('Period high')).not.toBeInTheDocument()
+  })
+
+  it('shows empty-state message when history returns no data points', async () => {
+    ;(global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ dates: [], rates: [] }),
+      } as Response)
+    )
+    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    await screen.findByText('No data available for this range.')
+  })
+
+  it('renders period high and low stats from history data', async () => {
+    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    await screen.findByText('Period high')
+    expect(screen.getByText('1.1000')).toBeInTheDocument()
+    expect(screen.getByText('Period low')).toBeInTheDocument()
+    expect(screen.getByText('1.0800')).toBeInTheDocument()
+  })
+
+  it('renders date range labels from history data', async () => {
+    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    await screen.findByText('Period high')
+    expect(screen.getByText('2025-01-01')).toBeInTheDocument()
+    expect(screen.getByText('2025-01-02')).toBeInTheDocument()
+  })
+
+  it('renders all five range selector buttons', async () => {
+    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    for (const label of ['1 day', '1 week', '1 month', '1 year', '5 years']) {
+      expect(screen.getByRole('button', { name: label })).toBeInTheDocument()
+    }
+    await screen.findByText('Period high')
+  })
+
+  it('re-fetches data when a different range button is clicked', async () => {
+    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    await screen.findByText('Period high')
+
+    ;(global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          dates: ['2024-12-24', '2024-12-25'],
+          rates: [1.03, 1.05],
+        }),
+      } as Response)
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '1 week' }))
+    await waitFor(() => {
+      expect(screen.getByText('1.0500')).toBeInTheDocument()
+    })
+    expect(screen.getByText('1.0300')).toBeInTheDocument()
+  })
+
+  it('renders "View live rates" link with correct href', async () => {
+    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    const link = screen.getByRole('link', { name: /view live.*rates/i })
+    expect(link).toHaveAttribute('href', expect.stringContaining('EUR'))
+    expect(link).toHaveAttribute('href', expect.stringContaining('USD'))
+    expect(link).toHaveAttribute('target', '_blank')
+    await screen.findByText('Period high')
   })
 })
