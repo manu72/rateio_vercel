@@ -1,5 +1,11 @@
 const CACHE_KEY = 'swr-cache'
 
+// Listeners are registered once and delegate to activePersist, which always
+// points to the persist function from the latest localStorageProvider() call.
+// This prevents stale closures accumulating during HMR in development.
+let activePersist: (() => void) | null = null
+let listenersAttached = false
+
 /**
  * Persists SWR's in-memory cache to localStorage so returning users
  * get instant data on page load (stale-while-revalidate across sessions).
@@ -32,10 +38,15 @@ export function localStorageProvider(): Map<string, any> {
     }
   }
 
-  window.addEventListener('beforeunload', persist)
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') persist()
-  })
+  activePersist = persist
+
+  if (!listenersAttached) {
+    window.addEventListener('beforeunload', () => activePersist?.())
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') activePersist?.()
+    })
+    listenersAttached = true
+  }
 
   return map
 }
