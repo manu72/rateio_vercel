@@ -39,6 +39,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
   const days = RANGE_DAYS[range]
   const { data, error, isLoading: loading } = useHistory(base, target, days)
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
+  const [mounted, setMounted] = useState(false)
   const [activeSide, setActiveSide] = useState<'base' | 'target'>('base')
   const [activeAmount, setActiveAmount] = useState('1')
   const dragStartY = useRef<number | null>(null)
@@ -62,10 +63,12 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
 
   const gradientId = `rateGradient-${base}-${target}`
 
-  // Hydrate activeAmount from localStorage (browser-only API, unavailable during SSR)
+  // Hydrate activeAmount from localStorage and mark component as mounted.
+  // mounted gates SWR-cached data so the first client render matches SSR (no hydration mismatch).
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setActiveAmount(loadActiveValue())
+    setMounted(true)
   }, [])
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -135,21 +138,21 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       </div>
 
       {/* Chart */}
-      {loading && data.length === 0 && (
+      {(!mounted || (loading && data.length === 0)) && (
         <div className="rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" style={{ height: chartHeight }} />
       )}
-      {error && data.length > 0 && (
+      {mounted && error && data.length > 0 && (
         <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs text-center py-2 px-4 rounded-lg">
           Could not refresh chart data. Showing cached data.
         </div>
       )}
-      {!loading && error && data.length === 0 && (
+      {mounted && !loading && error && data.length === 0 && (
         <p className="text-sm text-red-500 text-center py-8">{error}</p>
       )}
-      {!loading && !error && data.length === 0 && (
+      {mounted && !loading && !error && data.length === 0 && (
         <p className="text-sm text-slate-400 text-center py-8">No data available for this range.</p>
       )}
-      {data.length > 0 && (
+      {mounted && data.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm select-none">
           <ResponsiveContainer width="100%" height={chartHeight}>
             <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
@@ -206,7 +209,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       )}
 
       {/* Conversion card */}
-      {currentRate != null && (
+      {mounted && currentRate != null && (
         <div className="flex flex-col gap-2.5">
           <div className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
             activeSide === 'base'
@@ -260,7 +263,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       )}
 
       {/* Stats */}
-      {data.length > 0 && high !== null && low !== null && (
+      {mounted && data.length > 0 && high !== null && low !== null && (
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
             <p className="text-xs text-slate-400 mb-1">Period high</p>
