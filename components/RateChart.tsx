@@ -135,16 +135,21 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       </div>
 
       {/* Chart */}
-      {loading && (
+      {loading && data.length === 0 && (
         <div className="rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" style={{ height: chartHeight }} />
       )}
-      {error && (
+      {error && data.length > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs text-center py-2 px-4 rounded-lg">
+          Could not refresh chart data. Showing cached data.
+        </div>
+      )}
+      {!loading && error && data.length === 0 && (
         <p className="text-sm text-red-500 text-center py-8">{error}</p>
       )}
       {!loading && !error && data.length === 0 && (
         <p className="text-sm text-slate-400 text-center py-8">No data available for this range.</p>
       )}
-      {!loading && !error && data.length > 0 && (
+      {data.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm select-none">
           <ResponsiveContainer width="100%" height={chartHeight}>
             <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
@@ -255,7 +260,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       )}
 
       {/* Stats */}
-      {!loading && !error && high !== null && low !== null && (
+      {data.length > 0 && high !== null && low !== null && (
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
             <p className="text-xs text-slate-400 mb-1">Period high</p>

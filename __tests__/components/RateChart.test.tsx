@@ -156,13 +156,33 @@ describe('RateChart conversion card', () => {
 })
 
 describe('RateChart history fetch UX', () => {
-  it('shows error message when history fetch fails', async () => {
+  it('shows error message when history fetch fails with no cache', async () => {
     ;(global.fetch as jest.Mock).mockImplementation(() =>
       Promise.resolve({ ok: false } as Response)
     )
     renderChart()
     await screen.findByText('Failed to load history')
     expect(screen.queryByText('Period high')).not.toBeInTheDocument()
+  })
+
+  it('shows cached chart with stale-data banner when revalidation fails', async () => {
+    ;(global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.reject(new Error('network'))
+    )
+    const fallback = {
+      '/api/history?base=EUR&target=USD&days=30': {
+        dates: ['2025-01-01', '2025-01-02'],
+        rates: [1.08, 1.10],
+      },
+    }
+    render(
+      <SWRTestConfig fallback={fallback}>
+        <RateChart base="EUR" target="USD" currentRate={1.1} />
+      </SWRTestConfig>
+    )
+    await screen.findByText(/could not refresh chart data/i)
+    expect(screen.getByText('Period high')).toBeInTheDocument()
+    expect(screen.getByText('1.1000')).toBeInTheDocument()
   })
 
   it('shows empty-state message when history returns no data points', async () => {
