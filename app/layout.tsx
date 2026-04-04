@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import SWRProvider from "@/components/SWRProvider";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Analytics />
           </SWRProvider>
         </ThemeProvider>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

@@ -209,7 +209,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       )}
 
       {/* Conversion card */}
-      {currentRate != null && (
+      {mounted && currentRate != null && (
         <div className="flex flex-col gap-2.5">
           <div className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
             activeSide === 'base'
