@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { useTheme } from '@/components/ThemeProvider'
 import RateChart from '@/components/RateChart'
@@ -9,6 +9,7 @@ import CurrencyPicker from '@/components/CurrencyPicker'
 import { getCurrency } from '@/lib/currencies'
 import { convert } from '@/lib/converter'
 import { loadCurrencies, saveCurrencies } from '@/lib/storage'
+import { useRates } from '@/hooks/use-rates'
 
 export default function ChartPage() {
   const params = useParams<{ base: string; target: string }>()
@@ -16,21 +17,16 @@ export default function ChartPage() {
   const target = params.target.toUpperCase()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
-  const [currentRate, setCurrentRate] = useState<number | null>(null)
+  const { ratesData } = useRates()
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  useEffect(() => {
-    fetch('/api/rates')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return
-        const fromRate = data.rates[base]
-        const toRate = data.rates[target]
-        if (fromRate == null || toRate == null) return
-        setCurrentRate(convert(1, fromRate, toRate))
-      })
-      .catch(() => {})
-  }, [base, target])
+  const currentRate = useMemo(() => {
+    if (!ratesData) return null
+    const fromRate = ratesData.rates[base]
+    const toRate = ratesData.rates[target]
+    if (fromRate == null || toRate == null) return null
+    return convert(1, fromRate, toRate)
+  }, [ratesData, base, target])
 
   const baseCurrency = getCurrency(base)
   const targetCurrency = getCurrency(target)

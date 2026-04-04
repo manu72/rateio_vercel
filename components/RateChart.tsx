@@ -8,6 +8,7 @@ import {
 import { ExternalLink } from 'lucide-react'
 import { loadActiveValue, saveActiveValue } from '@/lib/storage'
 import { getCurrency } from '@/lib/currencies'
+import { useHistory } from '@/hooks/use-history'
 
 interface RateChartProps {
   base: string
@@ -29,20 +30,14 @@ function formatTick(value: number): string {
   return value.toFixed(4)
 }
 
-interface DataPoint {
-  date: string
-  rate: number
-}
-
 const MIN_HEIGHT = 120
 const MAX_HEIGHT = 500
 const DEFAULT_HEIGHT = 220
 
 export default function RateChart({ base, target, currentRate }: RateChartProps) {
   const [range, setRange] = useState<Range>('1M')
-  const [data, setData] = useState<DataPoint[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const days = RANGE_DAYS[range]
+  const { data, error, isLoading: loading } = useHistory(base, target, days)
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
   const [activeSide, setActiveSide] = useState<'base' | 'target'>('base')
   const [activeAmount, setActiveAmount] = useState('1')
@@ -72,27 +67,6 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
   useEffect(() => {
     setActiveAmount(loadActiveValue())
   }, [])
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  // Reset loading/error synchronously when deps change, then fetch
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    const controller = new AbortController()
-    setLoading(true)
-    setError(null)
-    const days = RANGE_DAYS[range]
-    fetch(`/api/history?base=${base}&target=${target}&days=${days}`, { signal: controller.signal })
-      .then(r => {
-        if (!r.ok) throw new Error('Failed to load history')
-        return r.json()
-      })
-      .then(({ dates, rates }: { dates: string[]; rates: number[] }) => {
-        setData(dates.map((date, i) => ({ date, rate: rates[i] })))
-      })
-      .catch(e => { if (e.name !== 'AbortError') setError(e.message) })
-      .finally(() => setLoading(false))
-    return () => controller.abort()
-  }, [base, target, range])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const high = data.length ? data.reduce((m, d) => Math.max(m, d.rate), -Infinity) : null

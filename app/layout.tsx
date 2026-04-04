@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import SWRProvider from "@/components/SWRProvider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -39,8 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.className} bg-slate-100 dark:bg-slate-950 min-h-screen`}>
         <ThemeProvider>
-          {children}
-          <Analytics />
+          <SWRProvider>
+            {children}
+            <Analytics />
+          </SWRProvider>
         </ThemeProvider>
       </body>
     </html>

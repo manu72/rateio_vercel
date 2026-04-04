@@ -1,4 +1,5 @@
-import { render, screen, waitFor, fireEvent, within } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { SWRTestConfig } from '../helpers/swr-test-config'
 
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -35,16 +36,25 @@ beforeEach(() => {
   )
 })
 
+function renderChart(props: { base?: string; target?: string; currentRate?: number | null } = {}) {
+  const { base = 'EUR', target = 'USD', currentRate = 1.1 } = props
+  return render(
+    <SWRTestConfig>
+      <RateChart base={base} target={target} currentRate={currentRate} />
+    </SWRTestConfig>
+  )
+}
+
 describe('RateChart conversion card', () => {
   it('renders base and target inputs when currentRate is provided', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     expect(screen.getByLabelText('Amount in EUR')).toBeInTheDocument()
     expect(screen.getByLabelText('Amount in USD')).toBeInTheDocument()
     await screen.findByText('Period high')
   })
 
   it('hides conversion card when currentRate is null', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={null} />)
+    renderChart({ currentRate: null })
     await screen.findByText('Period high')
     expect(screen.queryByLabelText('Amount in EUR')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Amount in USD')).not.toBeInTheDocument()
@@ -52,7 +62,7 @@ describe('RateChart conversion card', () => {
 
   it('hydrates activeAmount from localStorage on mount', async () => {
     mockLoadActiveValue.mockReturnValue('250')
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toHaveValue('250')
     })
@@ -61,7 +71,7 @@ describe('RateChart conversion card', () => {
 
   it('displays correct target value as base * rate', async () => {
     mockLoadActiveValue.mockReturnValue('100')
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toHaveValue('100')
     })
@@ -70,7 +80,7 @@ describe('RateChart conversion card', () => {
 
   it('derives target value when focusing the target input', async () => {
     mockLoadActiveValue.mockReturnValue('100')
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toHaveValue('100')
     })
@@ -82,7 +92,7 @@ describe('RateChart conversion card', () => {
 
   it('derives base value when switching back from target to base', async () => {
     mockLoadActiveValue.mockReturnValue('100')
-    render(<RateChart base="EUR" target="USD" currentRate={2.0} />)
+    renderChart({ currentRate: 2.0 })
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toHaveValue('100')
     })
@@ -97,7 +107,7 @@ describe('RateChart conversion card', () => {
   })
 
   it('saves base value directly when editing base input', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toBeInTheDocument()
     })
@@ -106,7 +116,7 @@ describe('RateChart conversion card', () => {
   })
 
   it('saves converted base value when editing target input', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={2.0} />)
+    renderChart({ currentRate: 2.0 })
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toBeInTheDocument()
     })
@@ -115,7 +125,7 @@ describe('RateChart conversion card', () => {
   })
 
   it('does not save when editing target with currentRate === 0', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={0} />)
+    renderChart({ currentRate: 0 })
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toBeInTheDocument()
     })
@@ -126,7 +136,7 @@ describe('RateChart conversion card', () => {
 
   it('handles currentRate === 0 without division errors', async () => {
     mockLoadActiveValue.mockReturnValue('100')
-    render(<RateChart base="EUR" target="USD" currentRate={0} />)
+    renderChart({ currentRate: 0 })
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toHaveValue('100')
     })
@@ -134,7 +144,7 @@ describe('RateChart conversion card', () => {
   })
 
   it('sanitises non-numeric input characters', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await waitFor(() => {
       expect(screen.getByLabelText('Amount in EUR')).toBeInTheDocument()
     })
@@ -150,7 +160,7 @@ describe('RateChart history fetch UX', () => {
     ;(global.fetch as jest.Mock).mockImplementation(() =>
       Promise.resolve({ ok: false } as Response)
     )
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await screen.findByText('Failed to load history')
     expect(screen.queryByText('Period high')).not.toBeInTheDocument()
   })
@@ -162,12 +172,12 @@ describe('RateChart history fetch UX', () => {
         json: () => Promise.resolve({ dates: [], rates: [] }),
       } as Response)
     )
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await screen.findByText('No data available for this range.')
   })
 
   it('renders period high and low stats from history data', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await screen.findByText('Period high')
     expect(screen.getByText('1.1000')).toBeInTheDocument()
     expect(screen.getByText('Period low')).toBeInTheDocument()
@@ -175,14 +185,14 @@ describe('RateChart history fetch UX', () => {
   })
 
   it('renders date range labels from history data', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await screen.findByText('Period high')
     expect(screen.getByText('2025-01-01')).toBeInTheDocument()
     expect(screen.getByText('2025-01-02')).toBeInTheDocument()
   })
 
   it('renders all five range selector buttons', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     for (const label of ['1 day', '1 week', '1 month', '1 year', '5 years']) {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument()
     }
@@ -190,7 +200,7 @@ describe('RateChart history fetch UX', () => {
   })
 
   it('re-fetches data when a different range button is clicked', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     await screen.findByText('Period high')
 
     ;(global.fetch as jest.Mock).mockImplementation(() =>
@@ -211,7 +221,7 @@ describe('RateChart history fetch UX', () => {
   })
 
   it('renders "View live rates" link with correct href', async () => {
-    render(<RateChart base="EUR" target="USD" currentRate={1.1} />)
+    renderChart()
     const link = screen.getByRole('link', { name: /view live.*rates/i })
     expect(link).toHaveAttribute('href', expect.stringContaining('EUR'))
     expect(link).toHaveAttribute('href', expect.stringContaining('USD'))

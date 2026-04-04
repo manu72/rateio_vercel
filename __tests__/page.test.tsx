@@ -1,5 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { SWRTestConfig } from './helpers/swr-test-config'
 
 const mockPush = jest.fn()
 const mockPrefetch = jest.fn()
@@ -63,7 +64,9 @@ beforeEach(() => {
 async function renderHome() {
   render(
     <ThemeProvider>
-      <Home />
+      <SWRTestConfig>
+        <Home />
+      </SWRTestConfig>
     </ThemeProvider>
   )
   await waitFor(() => {
@@ -109,18 +112,35 @@ describe('Home page focus-switch conversion', () => {
 })
 
 describe('Home page loadError banner', () => {
-  it('shows error banner when rate fetch fails', async () => {
+  it('does not show error banner when there is no cached data', async () => {
     global.fetch = jest.fn(() => Promise.reject(new Error('network')))
     render(
       <ThemeProvider>
-        <Home />
+        <SWRTestConfig>
+          <Home />
+        </SWRTestConfig>
       </ThemeProvider>
     )
-    await screen.findByText(/could not load rates/i)
+    // SWR will set error; banner only shows when cached data exists
+    await waitFor(() => {
+      expect(screen.queryByText(/could not refresh rates/i)).not.toBeInTheDocument()
+    })
+  })
+
+  it('shows cached-data banner when refresh fails but cache exists', async () => {
+    global.fetch = jest.fn(() => Promise.reject(new Error('network')))
+    render(
+      <ThemeProvider>
+        <SWRTestConfig fallback={{ '/api/rates': MOCK_RATES }}>
+          <Home />
+        </SWRTestConfig>
+      </ThemeProvider>
+    )
+    await screen.findByText(/could not refresh rates/i)
   })
 
   it('does not show error banner when rate fetch succeeds', async () => {
     await renderHome()
-    expect(screen.queryByText(/could not load rates/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/could not refresh rates/i)).not.toBeInTheDocument()
   })
 })
