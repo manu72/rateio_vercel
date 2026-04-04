@@ -172,7 +172,7 @@ export default function Home() {
     })
   }, [])
 
-  const isLoading = !storageLoaded || !ratesData
+  const isLoading = !storageLoaded || (!ratesData && !loadError)
 
   return (
     <main className="max-w-[430px] md:max-w-[600px] mx-auto min-h-screen flex flex-col">
@@ -187,7 +187,7 @@ export default function Home() {
       <div className="flex-1 px-3 py-3 flex flex-col gap-2.5">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} />)
-        ) : (
+        ) : ratesData ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={currencies} strategy={verticalListSortingStrategy}>
               {currencies.map(code => (
@@ -209,10 +209,14 @@ export default function Home() {
               ))}
             </SortableContext>
           </DndContext>
+        ) : (
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">
+            Could not load exchange rates. Check your connection and try again.
+          </p>
         )}
 
         {/* Add currency */}
-        {!isLoading && currencies.length < 10 && (
+        {!isLoading && ratesData && currencies.length < 10 && (
           <button
             type="button"
             onClick={() => setShowPicker(true)}

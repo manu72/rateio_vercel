@@ -112,7 +112,7 @@ describe('Home page focus-switch conversion', () => {
 })
 
 describe('Home page loadError banner', () => {
-  it('does not show error banner when there is no cached data', async () => {
+  it('shows error message instead of infinite skeleton when fetch fails with no cache', async () => {
     global.fetch = jest.fn(() => Promise.reject(new Error('network')))
     render(
       <ThemeProvider>
@@ -121,10 +121,9 @@ describe('Home page loadError banner', () => {
         </SWRTestConfig>
       </ThemeProvider>
     )
-    // SWR will set error; banner only shows when cached data exists
-    await waitFor(() => {
-      expect(screen.queryByText(/could not refresh rates/i)).not.toBeInTheDocument()
-    })
+    await screen.findByText(/could not load exchange rates/i)
+    // The cached-data banner should NOT show (there is no cached data)
+    expect(screen.queryByText(/could not refresh rates/i)).not.toBeInTheDocument()
   })
 
   it('shows cached-data banner when refresh fails but cache exists', async () => {
