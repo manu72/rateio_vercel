@@ -17,11 +17,7 @@ import CurrencyPicker from '@/components/CurrencyPicker'
 import { convert, formatAmount } from '@/lib/converter'
 import { loadCurrencies, saveCurrencies, loadActiveValue, saveActiveValue, loadActiveCurrency, saveActiveCurrency } from '@/lib/storage'
 import { getCurrency, hasHistoricalData } from '@/lib/currencies'
-
-interface RatesData {
-  rates: Record<string, number>
-  updatedAt: string
-}
+import { useRates } from '@/hooks/use-rates'
 
 interface SortableCurrencyRowProps {
   id: string
@@ -78,8 +74,7 @@ export default function Home() {
   const router = useRouter()
   const [currencies, setCurrencies] = useState<string[]>([])
   const [storageLoaded, setStorageLoaded] = useState(false)
-  const [ratesData, setRatesData] = useState<RatesData | null>(null)
-  const [loadError, setLoadError] = useState(false)
+  const { ratesData, error: loadError } = useRates()
   const [activeCurrency, setActiveCurrency] = useState<string>('')
   const [activeValue, setActiveValue] = useState<string>('1.00')
   const [showPicker, setShowPicker] = useState(false)
@@ -111,14 +106,6 @@ export default function Home() {
   useEffect(() => {
     if (storageLoaded) saveActiveCurrency(activeCurrency)
   }, [activeCurrency, storageLoaded])
-
-  // Fetch live rates
-  useEffect(() => {
-    fetch('/api/rates')
-      .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then((data: RatesData) => setRatesData(data))
-      .catch(() => setLoadError(true))
-  }, [])
 
   useEffect(() => {
     if (!activeCurrency || currencies.length < 2) return
@@ -185,22 +172,22 @@ export default function Home() {
     })
   }, [])
 
-  const isLoading = !storageLoaded || !ratesData
+  const isLoading = !storageLoaded || (!ratesData && !loadError)
 
   return (
     <main className="max-w-[430px] md:max-w-[600px] mx-auto min-h-screen flex flex-col">
       <Header updatedAt={ratesData?.updatedAt ?? null} />
 
-      {loadError && (
+      {loadError && ratesData && (
         <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs text-center py-2 px-4">
-          Could not load rates. Showing cached data.
+          Could not refresh rates. Showing cached data.
         </div>
       )}
 
       <div className="flex-1 px-3 py-3 flex flex-col gap-2.5">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} />)
-        ) : (
+        ) : ratesData ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={currencies} strategy={verticalListSortingStrategy}>
               {currencies.map(code => (
@@ -222,10 +209,14 @@ export default function Home() {
               ))}
             </SortableContext>
           </DndContext>
+        ) : (
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">
+            Could not load exchange rates. Check your connection and try again.
+          </p>
         )}
 
         {/* Add currency */}
-        {!isLoading && currencies.length < 10 && (
+        {!isLoading && ratesData && currencies.length < 10 && (
           <button
             type="button"
             onClick={() => setShowPicker(true)}

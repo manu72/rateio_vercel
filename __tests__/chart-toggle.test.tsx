@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { SWRTestConfig } from './helpers/swr-test-config'
 
 // mockUseParams is accessible inside jest.mock factory because it starts with 'mock'
 const mockUseParams = jest.fn(() => ({ base: 'aud', target: 'eur' }))
@@ -20,10 +21,12 @@ import ChartPage from '@/app/chart/[base]/[target]/page'
 async function renderChart() {
   render(
     <ThemeProvider>
-      <ChartPage />
+      <SWRTestConfig>
+        <ChartPage />
+      </SWRTestConfig>
     </ThemeProvider>
   )
-  // Wait for RateChart's fetch useEffect to settle (setLoading, setError)
+  // Wait for SWR to settle after fetch error
   await waitFor(() => expect(screen.getByText(/failed to load history/i)).toBeInTheDocument())
 }
 
@@ -53,10 +56,11 @@ describe('ChartPage theme toggle', () => {
     mockUseParams.mockReturnValue({ base: 'ZZZ', target: 'XXX' })
     render(
       <ThemeProvider>
-        <ChartPage />
+        <SWRTestConfig>
+          <ChartPage />
+        </SWRTestConfig>
       </ThemeProvider>
     )
-    // Invalid pair doesn't render RateChart — wait for the rates useEffect to settle
     await waitFor(() => expect(screen.getByText(/invalid currency pair/i)).toBeInTheDocument())
     expect(screen.queryByRole('button', { name: /toggle theme/i })).toBeNull()
   })
@@ -112,7 +116,9 @@ describe('ChartPage success path', () => {
   async function renderSuccessChart() {
     render(
       <ThemeProvider>
-        <ChartPage />
+        <SWRTestConfig>
+          <ChartPage />
+        </SWRTestConfig>
       </ThemeProvider>
     )
     await waitFor(() => {

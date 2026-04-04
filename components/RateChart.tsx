@@ -8,6 +8,7 @@ import {
 import { ExternalLink } from 'lucide-react'
 import { loadActiveValue, saveActiveValue } from '@/lib/storage'
 import { getCurrency } from '@/lib/currencies'
+import { useHistory } from '@/hooks/use-history'
 
 interface RateChartProps {
   base: string
@@ -29,20 +30,14 @@ function formatTick(value: number): string {
   return value.toFixed(4)
 }
 
-interface DataPoint {
-  date: string
-  rate: number
-}
-
 const MIN_HEIGHT = 120
 const MAX_HEIGHT = 500
 const DEFAULT_HEIGHT = 220
 
 export default function RateChart({ base, target, currentRate }: RateChartProps) {
   const [range, setRange] = useState<Range>('1M')
-  const [data, setData] = useState<DataPoint[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const days = RANGE_DAYS[range]
+  const { data, error, isLoading: loading } = useHistory(base, target, days)
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
   const [activeSide, setActiveSide] = useState<'base' | 'target'>('base')
   const [activeAmount, setActiveAmount] = useState('1')
@@ -72,27 +67,6 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
   useEffect(() => {
     setActiveAmount(loadActiveValue())
   }, [])
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  // Reset loading/error synchronously when deps change, then fetch
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    const controller = new AbortController()
-    setLoading(true)
-    setError(null)
-    const days = RANGE_DAYS[range]
-    fetch(`/api/history?base=${base}&target=${target}&days=${days}`, { signal: controller.signal })
-      .then(r => {
-        if (!r.ok) throw new Error('Failed to load history')
-        return r.json()
-      })
-      .then(({ dates, rates }: { dates: string[]; rates: number[] }) => {
-        setData(dates.map((date, i) => ({ date, rate: rates[i] })))
-      })
-      .catch(e => { if (e.name !== 'AbortError') setError(e.message) })
-      .finally(() => setLoading(false))
-    return () => controller.abort()
-  }, [base, target, range])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const high = data.length ? data.reduce((m, d) => Math.max(m, d.rate), -Infinity) : null
@@ -161,16 +135,21 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       </div>
 
       {/* Chart */}
-      {loading && (
+      {loading && data.length === 0 && (
         <div className="rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" style={{ height: chartHeight }} />
       )}
-      {error && (
+      {error && data.length > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs text-center py-2 px-4 rounded-lg">
+          Could not refresh chart data. Showing cached data.
+        </div>
+      )}
+      {!loading && error && data.length === 0 && (
         <p className="text-sm text-red-500 text-center py-8">{error}</p>
       )}
       {!loading && !error && data.length === 0 && (
         <p className="text-sm text-slate-400 text-center py-8">No data available for this range.</p>
       )}
-      {!loading && !error && data.length > 0 && (
+      {data.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm select-none">
           <ResponsiveContainer width="100%" height={chartHeight}>
             <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
@@ -281,7 +260,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       )}
 
       {/* Stats */}
-      {!loading && !error && high !== null && low !== null && (
+      {data.length > 0 && high !== null && low !== null && (
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
             <p className="text-xs text-slate-400 mb-1">Period high</p>
