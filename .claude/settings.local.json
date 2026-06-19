@@ -19,7 +19,9 @@
       "WebFetch(domain:github.com)",
       "Bash(npm test:*)",
       "Bash(ls:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+      "mcp__plugin_context-mode_context-mode__ctx_stats"
     ]
   }
 }

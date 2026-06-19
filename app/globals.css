@@ -10,6 +10,13 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand tokens create Tailwind utilities like bg-brand and text-on-brand. */
+  --color-brand: #25d366;
+  --color-brand-hover: #20bd5a;
+  --color-brand-active: #1aa64f;
+  --color-brand-muted: #25d36699;
+  --color-on-brand: #ffffff;
 }
 
 body {
