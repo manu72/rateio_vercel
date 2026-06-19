@@ -14,7 +14,10 @@ export default function SWRProvider({ children }: { children: React.ReactNode })
     <SWRConfig value={{
       provider: localStorageProvider,
       fetcher: jsonFetcher,
-      revalidateOnFocus: true,
+      // FX rates update daily upstream; the route revalidates hourly server-side.
+      // Revalidating on every tab/app focus just burns CPU/battery for unchanged
+      // data, so revalidate only on mount and on network reconnect.
+      revalidateOnFocus: false,
       revalidateOnReconnect: true,
       dedupingInterval: 60_000,
       errorRetryCount: 2,

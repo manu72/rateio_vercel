@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip,
@@ -8,7 +8,7 @@ import {
 import { ExternalLink } from 'lucide-react'
 import { loadActiveValue, saveActiveValue } from '@/lib/storage'
 import { getCurrency } from '@/lib/currencies'
-import { useHistory } from '@/hooks/use-history'
+import { useHistory, type HistoryDataPoint } from '@/hooks/use-history'
 
 interface RateChartProps {
   base: string
@@ -28,6 +28,21 @@ function formatTick(value: number): string {
   if (value >= 100) return value.toFixed(1)
   if (value >= 10) return value.toFixed(2)
   return value.toFixed(4)
+}
+
+const MAX_CHART_POINTS = 200
+
+// Long ranges (1Y/5Y) can deliver 1300+ daily points — far more than a 430px
+// screen can resolve. Downsample by stride so Recharts renders ~200 points max,
+// always preserving the final point so the right edge stays exact.
+function downsample(points: HistoryDataPoint[]): HistoryDataPoint[] {
+  if (points.length <= MAX_CHART_POINTS) return points
+  const stride = Math.ceil(points.length / MAX_CHART_POINTS)
+  const sampled: HistoryDataPoint[] = []
+  for (let i = 0; i < points.length; i += stride) sampled.push(points[i])
+  const last = points[points.length - 1]
+  if (sampled[sampled.length - 1] !== last) sampled.push(last)
+  return sampled
 }
 
 const MIN_HEIGHT = 120
@@ -74,6 +89,10 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
 
   const high = data.length ? data.reduce((m, d) => Math.max(m, d.rate), -Infinity) : null
   const low = data.length ? data.reduce((m, d) => Math.min(m, d.rate), Infinity) : null
+
+  // Downsample for rendering only; high/low stats and the date-range labels use
+  // the full series so they stay accurate.
+  const chartData = useMemo(() => downsample(data), [data])
 
   const parsedActive = parseFloat(activeAmount) || 0
 
@@ -155,7 +174,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
       {mounted && data.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm select-none">
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
