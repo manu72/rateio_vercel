@@ -65,11 +65,17 @@ describe('CurrencyRow', () => {
     expect(defaultProps.onChartClick).toHaveBeenCalled()
   })
 
-  it('uses solid brand-green styling for the chart button', () => {
+  it('uses pale default and brand-green hover for the chart button', () => {
     render(<CurrencyRow {...defaultProps} />)
     const btn = screen.getByRole('button', { name: 'chart' })
-    expect(btn).toHaveClass('bg-brand', 'text-on-brand', 'hover:bg-brand-hover', 'active:bg-brand-active')
-    expect(btn.className).not.toMatch(/bg-green-|text-green-|#86fcc8|#6fe0b0/)
+    expect(btn).toHaveClass(
+      'bg-green-50', 'text-green-600',
+      'hover:bg-brand', 'hover:text-on-brand',
+      'active:bg-brand-active',
+      'dark:bg-green-950', 'dark:text-green-400',
+      'dark:hover:bg-brand', 'dark:hover:text-on-brand',
+    )
+    expect(btn).not.toHaveClass('bg-brand', 'text-on-brand')
   })
 
   it('hides chart icon when showChartIcon is false', () => {
@@ -96,8 +102,7 @@ describe('CurrencyRow pending state', () => {
     render(<CurrencyRow {...defaultProps} chartPending={true} />)
     const btn = screen.getByRole('button', { name: /loading chart/i })
     expect(btn).toBeDisabled()
-    expect(btn).toHaveClass('bg-brand-muted', 'text-on-brand')
-    expect(btn.className).not.toMatch(/bg-green-|text-green-/)
+    expect(btn).toHaveClass('bg-green-100', 'text-green-500', 'dark:bg-green-900/60', 'dark:text-green-400')
   })
 
   it('does not call onChartClick when pending button is clicked', () => {
