@@ -199,7 +199,7 @@ describe('RateChart history fetch UX', () => {
   it('renders period high and low stats from history data', async () => {
     renderChart()
     await screen.findByText('Period high')
-    expect(screen.getByText('1.1000')).toBeInTheDocument()
+    expect(screen.getByText('1.1000')).toHaveClass('text-brand')
     expect(screen.getByText('Period low')).toBeInTheDocument()
     expect(screen.getByText('1.0800')).toBeInTheDocument()
   })

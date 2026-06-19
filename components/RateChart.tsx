@@ -267,7 +267,7 @@ export default function RateChart({ base, target, currentRate }: RateChartProps)
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
             <p className="text-xs text-slate-400 mb-1">Period high</p>
-            <p className="text-base font-bold text-green-500">{high.toFixed(4)}</p>
+            <p className="text-base font-bold text-brand">{high.toFixed(4)}</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
             <p className="text-xs text-slate-400 mb-1">Period low</p>

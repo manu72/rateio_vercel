@@ -65,6 +65,13 @@ describe('CurrencyRow', () => {
     expect(defaultProps.onChartClick).toHaveBeenCalled()
   })
 
+  it('uses solid brand-green styling for the chart button', () => {
+    render(<CurrencyRow {...defaultProps} />)
+    const btn = screen.getByRole('button', { name: 'chart' })
+    expect(btn).toHaveClass('bg-brand', 'text-on-brand', 'hover:bg-brand-hover', 'active:bg-brand-active')
+    expect(btn.className).not.toMatch(/bg-green-|text-green-|#86fcc8|#6fe0b0/)
+  })
+
   it('hides chart icon when showChartIcon is false', () => {
     render(<CurrencyRow {...defaultProps} showChartIcon={false} />)
     expect(screen.queryByRole('button', { name: /chart/i })).not.toBeInTheDocument()
@@ -89,6 +96,8 @@ describe('CurrencyRow pending state', () => {
     render(<CurrencyRow {...defaultProps} chartPending={true} />)
     const btn = screen.getByRole('button', { name: /loading chart/i })
     expect(btn).toBeDisabled()
+    expect(btn).toHaveClass('bg-brand-muted', 'text-on-brand')
+    expect(btn.className).not.toMatch(/bg-green-|text-green-/)
   })
 
   it('does not call onChartClick when pending button is clicked', () => {

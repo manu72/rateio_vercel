@@ -115,10 +115,10 @@ export default function CurrencyRow({
             onClick={chartPending ? undefined : onChartClick}
             disabled={chartPending}
             aria-label={chartPending ? 'Loading chart' : 'chart'}
-            className={`flex items-center justify-center w-[34px] h-[34px] rounded-[9px] transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[#86fcc8] focus-visible:ring-offset-1 ${
+            className={`flex items-center justify-center w-[34px] h-[34px] rounded-[9px] motion-safe:transition-colors motion-safe:duration-150 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-800 ${
               chartPending
-                ? 'bg-green-100 text-green-500 dark:bg-green-900/60 dark:text-green-400'
-                : 'cursor-pointer bg-green-50 text-green-600 hover:bg-[#86fcc8] hover:text-slate-900 active:scale-95 active:bg-[#6fe0b0] dark:bg-green-950 dark:text-green-400 dark:hover:bg-[#86fcc8] dark:hover:text-slate-900'
+                ? 'bg-brand-muted text-on-brand'
+                : 'cursor-pointer bg-brand text-on-brand hover:bg-brand-hover active:bg-brand-active motion-safe:active:scale-95'
             }`}
           >
             {chartPending
