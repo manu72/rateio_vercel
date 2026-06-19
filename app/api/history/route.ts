@@ -3,19 +3,29 @@ import { FRANKFURTER_CURRENCIES } from '@/lib/currencies'
 
 export const revalidate = 86400 // 24 hours
 
+const CURRENCY_CODE = /^[A-Z]{3}$/
+const DEFAULT_DAYS = 30
+const MAX_DAYS = 1825 // matches the longest chart range (5Y)
+
 function toDateString(date: Date): string {
   return date.toISOString().split('T')[0]
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const base = searchParams.get('base')
-  const target = searchParams.get('target')
-  const days = parseInt(searchParams.get('days') ?? '30', 10)
+  // Normalize + validate before these values touch any upstream URL.
+  const base = (searchParams.get('base') ?? '').toUpperCase()
+  const target = (searchParams.get('target') ?? '').toUpperCase()
 
-  if (!base || !target) {
-    return NextResponse.json({ error: 'base and target are required' }, { status: 400 })
+  if (!CURRENCY_CODE.test(base) || !CURRENCY_CODE.test(target)) {
+    return NextResponse.json(
+      { error: 'base and target must be valid 3-letter currency codes' },
+      { status: 400 },
+    )
   }
+
+  const rawDays = parseInt(searchParams.get('days') ?? String(DEFAULT_DAYS), 10)
+  const days = Number.isFinite(rawDays) ? Math.min(Math.max(rawDays, 1), MAX_DAYS) : DEFAULT_DAYS
 
   const endDate = new Date()
   const startDate = new Date()
