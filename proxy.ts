@@ -22,7 +22,7 @@ function clientIp(req: NextRequest): string {
   return req.headers.get('x-real-ip') ?? 'unknown'
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const ip = clientIp(request)
   const now = Date.now()
 
