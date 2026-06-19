@@ -2,10 +2,21 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useTheme } from '@/components/ThemeProvider'
-import RateChart from '@/components/RateChart'
 import CurrencyPicker from '@/components/CurrencyPicker'
+
+// Load RateChart (and its heavy Recharts dependency) as a client-only async
+// chunk so it stays out of the chart route's main bundle. The route's
+// loading.tsx skeleton covers the initial navigation; this fallback covers the
+// brief window before the chunk hydrates.
+const RateChart = dynamic(() => import('@/components/RateChart'), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-xl bg-slate-100 dark:bg-slate-800 motion-safe:animate-pulse" style={{ height: 220 }} />
+  ),
+})
 import { getCurrency } from '@/lib/currencies'
 import { convert } from '@/lib/converter'
 import { loadCurrencies, saveCurrencies } from '@/lib/storage'

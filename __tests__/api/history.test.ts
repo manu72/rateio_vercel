@@ -117,4 +117,62 @@ describe('GET /api/history', () => {
     const response = await GET(makeRequest({ base: 'AED', target: 'NGN', days: '3' }))
     expect(response.status).toBe(500)
   })
+
+  it('rejects malformed currency codes with 400 (no upstream call)', async () => {
+    const { GET } = await import('@/app/api/history/route')
+    for (const bad of ['USD!', 'US', 'USDB', '../../v1', 'us d', '1A2', 'EUR ']) {
+      const res = await GET(makeRequest({ base: bad, target: 'USD', days: '3' }))
+      expect(res.status).toBe(400)
+    }
+    for (const bad of ['', 'NG', 'NGNB', 'a b c']) {
+      const res = await GET(makeRequest({ base: 'EUR', target: bad, days: '3' }))
+      expect(res.status).toBe(400)
+    }
+    expect((global.fetch as jest.Mock)).not.toHaveBeenCalled()
+  })
+
+  it('normalizes lowercase currency codes to uppercase before forwarding', async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockFrankfurterTimeseriesResponse,
+    })
+    const { GET } = await import('@/app/api/history/route')
+    const response = await GET(makeRequest({ base: 'eur', target: 'usd', days: '3' }))
+    expect(response.status).toBe(200)
+    const calledUrl: string = (global.fetch as jest.Mock).mock.calls[0][0]
+    expect(calledUrl).toContain('base=EUR')
+    expect(calledUrl).toContain('symbols=USD')
+  })
+
+  it('clamps an absurd days value to the maximum range', async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockFrankfurterTimeseriesResponse,
+    })
+    const { GET } = await import('@/app/api/history/route')
+    const response = await GET(makeRequest({ base: 'EUR', target: 'USD', days: '99999999999' }))
+    expect(response.status).toBe(200)
+    const calledUrl: string = (global.fetch as jest.Mock).mock.calls[0][0]
+    const match = calledUrl.match(/\/v1\/(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})/)
+    expect(match).not.toBeNull()
+    const spanDays = (Date.parse(match![2]) - Date.parse(match![1])) / 86_400_000
+    expect(spanDays).toBeLessThanOrEqual(1825)
+  })
+
+  it('falls back to the default range when days is non-numeric', async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockFrankfurterTimeseriesResponse,
+    })
+    const { GET } = await import('@/app/api/history/route')
+    const response = await GET(makeRequest({ base: 'EUR', target: 'USD', days: 'garbage' }))
+    expect(response.status).toBe(200)
+    const calledUrl: string = (global.fetch as jest.Mock).mock.calls[0][0]
+    const match = calledUrl.match(/\/v1\/(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})/)
+    expect(match).not.toBeNull()
+    const spanDays = (Date.parse(match![2]) - Date.parse(match![1])) / 86_400_000
+    // default range is 30 days, clamped to [1, 1825]
+    expect(spanDays).toBeGreaterThan(20)
+    expect(spanDays).toBeLessThanOrEqual(1825)
+  })
 })
