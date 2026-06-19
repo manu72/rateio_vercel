@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { GripVertical, TrendingUp, X, Loader2 } from 'lucide-react'
 
@@ -19,7 +19,7 @@ interface CurrencyRowProps {
   dragHandleProps: React.HTMLAttributes<HTMLElement>
 }
 
-export default function CurrencyRow({
+function CurrencyRow({
   code, flag, value, isActive, showChartIcon, chartDisabled, chartPending,
   onFocus, onChange, onChartClick, onRemove, dragHandleProps,
 }: CurrencyRowProps) {
@@ -154,6 +154,11 @@ export default function CurrencyRow({
     </div>
   )
 }
+
+// memoized so a row skips re-rendering when its props are unchanged — e.g. when
+// the shared active value changes but this row's displayed (rounded) value does
+// not, or on unrelated parent re-renders (picker toggle, chart navigation).
+export default memo(CurrencyRow)
 
 function ChartDisabledIcon({
   tooltipVisible,

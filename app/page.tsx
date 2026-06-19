@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useTransition } from 'react'
+import { useState, useEffect, useCallback, useTransition, useMemo, useRef, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
@@ -34,19 +34,32 @@ interface SortableCurrencyRowProps {
   onRemove: (code: string) => void
 }
 
-function SortableCurrencyRow(props: SortableCurrencyRowProps) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
+const SortableCurrencyRow = memo(function SortableCurrencyRow({
+  id, code, rates, activeCurrency, activeValue, showChartIcon, chartDisabled,
+  chartPending, onFocus, onChange, onChartClick, onRemove,
+}: SortableCurrencyRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
   const style = { transform: CSS.Transform.toString(transform), transition }
-  const currency = getCurrency(props.code)
+
+  // Stabilize per-row callbacks + drag-handle props (all hooks must run before
+  // the early return below). This lets the memoized CurrencyRow bail out when
+  // the shared activeValue changed but this row's displayed value did not.
+  const handleFocus = useCallback(() => onFocus(code), [code, onFocus])
+  const handleChange = useCallback((v: string) => onChange(code, v), [code, onChange])
+  const handleChartClick = useCallback(() => onChartClick(code), [code, onChartClick])
+  const handleRemove = useCallback(() => onRemove(code), [code, onRemove])
+  const dragHandleProps = useMemo(() => ({ ...attributes, ...listeners }), [attributes, listeners])
+
+  const currency = getCurrency(code)
   if (!currency) return null
 
-  const displayValue = props.code === props.activeCurrency
-    ? props.activeValue
+  const displayValue = code === activeCurrency
+    ? activeValue
     : formatAmount(
         convert(
-          parseFloat(props.activeValue) || 0,
-          props.rates[props.activeCurrency] ?? 1,
-          props.rates[props.code] ?? 1,
+          parseFloat(activeValue) || 0,
+          rates[activeCurrency] ?? 1,
+          rates[code] ?? 1,
         )
       )
 
@@ -56,19 +69,19 @@ function SortableCurrencyRow(props: SortableCurrencyRowProps) {
         code={currency.code}
         flag={currency.flag}
         value={displayValue}
-        isActive={props.code === props.activeCurrency}
-        showChartIcon={props.showChartIcon}
-        chartDisabled={props.chartDisabled}
-        onFocus={() => props.onFocus(props.code)}
-        onChange={v => props.onChange(props.code, v)}
-        chartPending={props.chartPending}
-        onChartClick={() => props.onChartClick(props.code)}
-        onRemove={() => props.onRemove(props.code)}
-        dragHandleProps={{ ...attributes, ...listeners }}
+        isActive={code === activeCurrency}
+        showChartIcon={showChartIcon}
+        chartDisabled={chartDisabled}
+        chartPending={chartPending}
+        onFocus={handleFocus}
+        onChange={handleChange}
+        onChartClick={handleChartClick}
+        onRemove={handleRemove}
+        dragHandleProps={dragHandleProps}
       />
     </div>
   )
-}
+})
 
 export default function Home() {
   const router = useRouter()
@@ -98,10 +111,28 @@ export default function Home() {
   }, [])
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Persist activeValue and activeCurrency to localStorage on change
+  // Persist activeValue to localStorage, debounced so typing doesn't perform a
+  // synchronous storage write on every keystroke. The latest value is also
+  // flushed when the page is hidden or unloaded, covering navigation away
+  // (e.g. to a chart) before the debounce timer fires.
+  const activeValueRef = useRef(activeValue)
+  useEffect(() => { activeValueRef.current = activeValue }, [activeValue])
+
   useEffect(() => {
-    if (storageLoaded) saveActiveValue(activeValue)
+    if (!storageLoaded) return
+    const timer = setTimeout(() => saveActiveValue(activeValue), 400)
+    return () => clearTimeout(timer)
   }, [activeValue, storageLoaded])
+
+  useEffect(() => {
+    const flush = () => saveActiveValue(activeValueRef.current)
+    window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', flush)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', flush)
+    }
+  }, [])
 
   useEffect(() => {
     if (storageLoaded) saveActiveCurrency(activeCurrency)
