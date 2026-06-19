@@ -13,7 +13,12 @@ const isProd = process.env.NODE_ENV === "production";
 // drop 'unsafe-inline' while keeping the FOUC script and flight payload intact.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+  // React's development build uses eval() for stack-trace reconstruction, so
+  // allow 'unsafe-eval' only outside production. Production React never evals,
+  // keeping the production policy strict.
+  isProd
+    ? "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com"
+    : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self' data:",
